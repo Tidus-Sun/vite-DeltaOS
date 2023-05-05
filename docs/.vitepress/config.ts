@@ -34,7 +34,10 @@ export default defineConfig({
 
       {
         text: '常用链接',
-        items: [{ text: '内部仓库', link: 'http://192.168.11.72' }],
+        items: [
+          { items: [{ text: '内部仓库', link: 'http://192.168.11.72' }] },
+          { items: [{ text: 'GitHub', link: 'https://github.com' }] },
+        ],
       },
     ],
 

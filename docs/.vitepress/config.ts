@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   lang: 'zh-CN',
   title: '道系统6维基百科',
-  logo: '',
+  logo: '/starbucks-color.svg',
   description: 'Vite & Vue powered static site generator.',
 
   themeConfig: {

@@ -7,8 +7,11 @@ hero:
   tagline: 来都来了，不学习些东西怎么能行呢？
   actions:
     - theme: brand
-      text: 开始
-      link: /example
+      text: 开始使用
+      link: /简介
+    - theme: brand
+      text: 样例
+      link: /飞腾平台/QEMU虚拟机启动64位道系统
     - theme: alt
       text: 科银京成官网
       link: http://www.coretek.com.cn

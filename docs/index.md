@@ -5,25 +5,24 @@ hero:
   name: 道系统6 Wiki
   text: 欢迎访问科银京成道系统6维基小百科
   tagline: 来都来了，不学习些东西怎么能行呢？
+  image:
+    src: /libuv.png
+    alt: 道系统6 Wiki
   actions:
     - theme: brand
       text: 开始使用
       link: /简介
-    - theme: brand
-      text: 样例
-      link: /飞腾平台/QEMU虚拟机启动64位道系统
     - theme: alt
       text: 科银京成官网
       link: http://www.coretek.com.cn
-
 features:   
   - icon: ⚡️
-    title: 这是一个闪电图标
-    details: wawawa
+    title: 研究
+    details: 大家
   - icon: 🖖
-    title: 这是一个手掌图标
-    details: good...
+    title: 实践
+    details: 一起
   - icon: 📡
-    title: 这是一个修理图标
-    details: cocococo
+    title: 分享
+    details: 努力
 ---

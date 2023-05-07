@@ -19,8 +19,8 @@ hero:
 features:   
   - icon: ⚡️
     title: 团队成员
-    details: 团队成员介绍
-    link: /member
+    details: 科银京成道系统6团队成员介绍
+    link: /团队成员/member
     linkText: 了解更多
   - icon: 🖖
     title: 实践

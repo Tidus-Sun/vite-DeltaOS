@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: 道系统6 Wiki
-  text: 欢迎访问科银京成道系统6维基小百科
+  text: 欢迎访问科银京成         道系统6维基小百科💯
   tagline: 来都来了，不学习些东西怎么能行呢？
   image:
     src: /libuv.png

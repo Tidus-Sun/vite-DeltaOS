@@ -28,6 +28,7 @@ export default defineConfig({
       provider: 'local',
     },
     nav: [
+      { text: '目录', link: '/简介' },
       { text: '公共知识', link: '/公共知识/' },
       { text: '飞腾平台', link: '/飞腾平台/' },
       { text: '龙芯平台', link: '/龙芯平台/' },

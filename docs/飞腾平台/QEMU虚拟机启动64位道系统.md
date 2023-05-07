@@ -1,12 +1,7 @@
-# QEMU 虚拟机启动 64 位道系统 <Badge type="tip" text="v1.3" />
-
 <div align='center'><font size=8>QEMU虚拟机启动64位道系统</font></div>
 
-<div align="center">
-    <img src="https://img.shields.io/badge/Platform-QEMU | AArch64 | DeltaOS-008DB6?style=flat&logo=Arch Linux">
+<div align='center'>
     <img src="https://img.shields.io/badge/Version-v1.3-99CC33?style=flat&logo=Git">
-    <img src="https://img.shields.io/badge/Date-2023.03.31-FF6384?style=flat&logo=Crayon">
-    <img src="https://img.shields.io/badge/License-Coretek-ffb71b?style=flat&logo=Coursera">
     <img src="https://shields.io/badge/WriteBy-Tidus-31C48D?style=flat&logo=Ghostery">
 </div>
 

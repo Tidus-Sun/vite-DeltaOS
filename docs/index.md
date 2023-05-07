@@ -18,9 +18,9 @@ hero:
       link: http://www.coretek.com.cn
 features:   
   - icon: ⚡️
-    title: 研究
-    details: 大家
-    link: /简介
+    title: 团队成员
+    details: 团队成员介绍
+    link: /member
     linkText: 了解更多
   - icon: 🖖
     title: 实践

@@ -12,7 +12,7 @@ export default defineConfig({
   },
 
   themeConfig: {
-    logo: '/libuv.png',
+    logo: '/libuv-color.svg',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Tidus-Sun/vite-DeltaOS' },
     ],

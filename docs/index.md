@@ -6,8 +6,9 @@ hero:
   text: 欢迎访问科银京成         道系统6维基小百科💯
   tagline: 来都来了，不学习些东西怎么能行呢？
   image:
-    src: /libuv-color.svg
-    alt: 道系统6 Wiki
+    light: '/libuv-color.svg'
+    dark: '/deno-color.svg'
+    alt: 试试Drak模式？
   actions:
     - theme: brand
       text: 开始使用
@@ -19,6 +20,8 @@ features:
   - icon: ⚡️
     title: 研究
     details: 大家
+    link: /简介
+    linkText: 了解更多
   - icon: 🖖
     title: 实践
     details: 一起

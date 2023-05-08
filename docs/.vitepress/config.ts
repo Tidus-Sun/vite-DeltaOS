@@ -91,7 +91,10 @@ export default defineConfig({
           text: '龙芯平台',
           collapsed: false,
           items: [
-            //{ text: '龙芯', link: '/公共知识/index.md' },
+            {
+              text: '804性能问题分析报告',
+              link: '/龙芯平台/804性能问题分析报告/804性能问题分析报告.md',
+            },
             // ...
           ],
         },
@@ -146,7 +149,10 @@ export default defineConfig({
           text: '龙芯平台',
           collapsed: false,
           items: [
-            //{ text: '龙芯', link: '/公共知识/index.md' },
+            {
+              text: '804性能问题分析报告',
+              link: '/龙芯平台/804性能问题分析报告/804性能问题分析报告.md',
+            },
             // ...
           ],
         },

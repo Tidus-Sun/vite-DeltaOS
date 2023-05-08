@@ -19,6 +19,8 @@ hero:
 features:   
   - icon:
       light: '/criticalrole-color.svg'
+      dark: '/criticalrole-color-white.svg'
+      height: '600'
     title: 团队成员
     details: 科银京成道系统6团队成员介绍
     link: /团队成员/member

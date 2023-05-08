@@ -12,13 +12,14 @@ export default defineConfig({
   },
 
   themeConfig: {
+    //siteTitle: '1111111111111111111111',
     logo: { light: '/pic/libuv-color.svg', dark: '/pic/deno-color.svg' },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Tidus-Sun/vite-DeltaOS' },
     ],
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2019-present Tidus',
+      copyright: '版权所有 © 2023-present Coretek Tidus',
     },
     docFooter: {
       prev: '上一页',
@@ -29,9 +30,9 @@ export default defineConfig({
     },
     nav: [
       { text: '目录', link: '/简介' },
-      { text: '公共知识', link: '/公共知识/' },
-      { text: '飞腾平台', link: '/飞腾平台/' },
-      { text: '龙芯平台', link: '/龙芯平台/' },
+      { text: '公共知识', link: '/公共知识/', activeMatch: '/公共知识/' },
+      { text: '飞腾平台', link: '/飞腾平台/', activeMatch: '/飞腾平台/' },
+      { text: '龙芯平台', link: '/龙芯平台/', activeMatch: '/龙芯平台/' },
 
       {
         text: '常用链接',

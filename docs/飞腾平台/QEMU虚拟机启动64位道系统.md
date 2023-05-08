@@ -1,3 +1,7 @@
+---
+layout: doc
+---
+
 <div align='center'><font size=8>QEMU虚拟机启动64位道系统</font></div>
 <br>
 <div align='center'>

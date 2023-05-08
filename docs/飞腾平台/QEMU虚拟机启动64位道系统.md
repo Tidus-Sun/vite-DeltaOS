@@ -4,8 +4,8 @@
     <img src="https://img.shields.io/badge/Platform-AArch64|QEMU|DeltaOS-008DB6?style=flat&logo=arm" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Version-v1.3-99CC33?style=flat&logo=Git" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Date-2023.03.31-FF6384?style=flat&logo=Crayon" style="display: inline-block;">
-    </div>
-    <div align='center'>
+</div>
+ <div align='center'>
     <img src="https://img.shields.io/badge/License-Coretek-ffb71b?style=flat&logo=Coursera" style="display: inline-block;">&nbsp;
     <img src="https://shields.io/badge/WriteBy-Tidus-31C48D?style=flat&logo=Ghostery" style="display: inline-block;">
 </div>

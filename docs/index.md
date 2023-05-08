@@ -17,7 +17,8 @@ hero:
       text: 科银京成官网
       link: http://www.coretek.com.cn
 features:   
-  - icon: ⚡️
+  - icon:
+      light: '/criticalrole-color.svg'
     title: 团队成员
     details: 科银京成道系统6团队成员介绍
     link: /团队成员/member

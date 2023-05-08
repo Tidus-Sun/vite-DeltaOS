@@ -33,7 +33,7 @@ const members = [
     ]
   },
   {
-    avatar: '/团队成员/argo-color.svg',
+    avatar: '/团队成员/9527.png',
     name: '孙笑',
     title: '工程师 | 技术组长',
     desc: '飞腾平台',

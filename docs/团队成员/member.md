@@ -55,7 +55,7 @@ const members = [
     ]
   },
   {
-    avatar: '/团队成员/argo-color.svg',
+    avatar: '/团队成员/王德泽.jpg',
     name: '王德泽',
     title: '工程师',
     desc: '飞腾 | 龙芯平台',

@@ -12,6 +12,7 @@ export default defineConfig({
     config: (md) => {
       // use more markdown-it plugins!
       md.use(require('markdown-it-katex'));
+      md.use(require('markdown-it-footnote'));
     },
   },
 

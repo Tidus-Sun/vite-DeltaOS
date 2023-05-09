@@ -151,7 +151,7 @@ vxWorks 运行在处理器的 Non-secure PL1&0 状态，只需考虑一张中断
 
 通过前文可知，LR\_*abt*寄存器为导致异常的指令地址+8，因此需要减 8 后与 R0-R4 一起入栈保存，注意这里使用的是*STMIB*指令入栈，即满增栈，==后续的*L$excEnterCommon*代码段会在此时栈最低地址空余出的 4 个字节中保存 SPSR 寄存器的值==。
 
-```assembly
+```c
 #if (_VX_CPU == _VX_ARMARCH7)
 
 /*
@@ -193,7 +193,7 @@ CLREX /* CLREX is only available for ARMv6K and above */
 
 ==所谓 OSM 处理，是系统初始化时通过 excOsmInit()接口设置与页大小对齐的 guard region（还需要调用 taskStackGuardPageEnable()进行使能），当任务的异常栈发生上溢导致 Data Abort 时，异常处理程序会调用 vmStateSet()接口将 guard region 大小的空间设置为可读写属性，从而扩大异常栈，避免上溢。==
 
-```assembly
+```c
 /*
  * offset stack pointer past ESF info area used by common exception
  * handler to area set aside to be used as OSM Stack...
@@ -228,7 +228,7 @@ ADD sp, sp, #96*4
 
 Abort 模式的栈定义如下：
 
-```assembly
+```c
 VAR_LABEL(abortSaveArea)
 #if defined (_WRS_OSM_INIT)
 VAR_LABEL(abortSaveArea_0)
@@ -244,7 +244,7 @@ VAR_LABEL(abortSaveArea_0) .fill 7, 4  /* 7 registers: SPSR,r0-r4,lr */
 
 检查*cpu_taskIdCurrent*是否为 NULL，如果为空说明异常出现在系统初始化阶段，跳转到 move_back_to_stack 处恢复原始栈基址后继续运行。
 
-```assembly
+```c
 _ARM_PER_CPU_VALUE_GET (r2, r3, taskIdCurrent) /* r2 -> TCB */
 TEQ r2, #0
 BEQ move_back_to_stack   /* if NULL, in pre-kernel */
@@ -254,7 +254,7 @@ BEQ move_back_to_stack   /* if NULL, in pre-kernel */
 
 依次检查*osmGuardPageSize*，*vxIntStackOverflowSize*和*vxIntStackUnderflowSize*的值，不为 0 时说明设置了栈溢出保护（**任务异常栈或中断栈**），跳转到 check_stack（[3.4 章节](###3.4 检查栈空间)）处进行栈保护检查。如果未设置栈溢出保护则跳转到 move_back_to_stack 处执行常规处理。
 
-```assembly
+```c
 LDR r3, L$_osmGuardPageSize
 LDR r3, [r3]       /* r3 -> osmGuardPageSize */
 TEQ r3, #0         /* if NULL, osm guard regions not initialized */
@@ -308,7 +308,7 @@ if (pParams->intStackOverflowSize > 0 || pParams->intStackUnderflowSize > 0)
 
 读取*DFAR*寄存器到 LR\_*abt*中，该寄存器的值是导致 Data Abort 异常的地址。然后根据*SPSR.M[4:0]*判断异常发生时的处理器模式，如果不是 SVC 模式则不进行栈溢出检查，跳转到 move_back_to_stack 执行。
 
-```assembly
+```c
 check_stack:
     #ifndef _WRS_CONFIG_WRHV_COPROCESSOR_CTRL
     #ifndef ARMCPUMMULESS
@@ -336,7 +336,7 @@ check_stack:
 
 在关中断的状态下切换到 SVC 模式，将 SVC 模式的栈指针保存在 R1 寄存器中后再切换回 Abort 模式。==获取 SP\_*svc*的目的是后续同时通过 SP\_*svc*和 DFAR 判断是否发生栈溢出==。
 
-```assembly
+```c
 /* get SVC Mode stack pointer */
 /* switch to SVC mode with interrupts (IRQs) disabled */
 
@@ -371,7 +371,7 @@ MSR cpsr, r3
 
 获取 vxKernelVars[*CORE_NUM*].cpu_intCnt，如果该值不为 0 说明异常**发生在中断**中，跳转到 check_interrupt_stack 执行中断栈检查，为 0 说明异常**发生在任务**中。
 
-```assembly
+```c
 /* if intCnt == 0 we are from task */
 
 _ARM_PER_CPU_VALUE_GET (r0, r3, intCnt)
@@ -391,7 +391,7 @@ BNE check_interrupt_stack /* from Interrupt, check int stack */
 
 再获取*cpu_taskIdCurrent->excCnt*并判断是否为 0，为 0 说明==没有异常嵌套，无需检查异常栈溢出==，跳转到 move_back_to_stack 中执行。
 
-```assembly
+```c
 LDR r0, [r2, #WIND_TCB_OPTIONS]     /* r0 -> options */
 ANDS r0, r0, #VX_NO_STACK_PROTECT
 BNE move_back_to_stack
@@ -411,7 +411,7 @@ BEQ move_back_to_stack  /* Check stack overflow for exception */
 
 若 DFAR（保存在 LR 中）大于等于*cpu_taskIdCurrent->pExcStackStart*，说明本次异常不是访问异常栈导致的，跳转到 move_back_to_stack 处执行。
 
-```assembly
+```c
 LDR r0, [r2, #WIND_TCB_PEXC_STK_START]
 LDR r3, [r2, #WIND_TCB_P_K_STK_END]
 
@@ -432,7 +432,7 @@ BGT move_back_to_stack  /* exception stack do not have underflow
 
 若 DFAR 大于*cpu_taskIdCurrent->pExcStackEnd*，说明访问异常栈时发生错误，但没有溢出，跳转到 move_back_to_stack 处执行。
 
-```assembly
+```c
 CMP r1, r3
 BLE exc_stk_overrun     /* if >= end, then not in base-Guard */
 
@@ -442,7 +442,7 @@ BGT move_back_to_stack  /* if >= end, then not in base-Guard */
 
 将*cpu_taskIdCurrent->pExcStackEnd*减去*osmGuardPageSize*，再与*DFAR*比较，如果 LR 小于等于 R3，说明*DFAR*在 guard page 范围之外，异常栈增加 guard region 也还是会发生溢出，跳转至 move_back_to_stack 执行。注意，若系统初始化时没有调用 excOsmInit()设置*osmGuardPageSize*，该值默认为 0。
 
-```assembly
+```c
 SUB r3, r3, r2          /* offset by guard page */
 CMP r14, r3
 ADDGT r3, r3, r2
@@ -451,7 +451,7 @@ BLE move_back_to_stack  /* if <= base-Guard, fault lies elsewhere */
 
 如果 SP\_*svc*大于扩大后的异常栈栈顶（_cpu_taskIdCurrent->pExcStackEnd - osmGuardPageSize_），说明异常栈扩大后可以避免溢出，则跳转到 enable_guard_region（[3.4.6 扩大栈空间](###3.4.6 扩大栈空间)）进行 vmStateSet()操作，否则跳转 move_back_to_stack。
 
-```assembly
+```c
 exc_stk_overrun:
     SUB r3, r3, r2          /* offset by guard page */
     CMP r1, r3
@@ -470,7 +470,7 @@ exc_stk_overrun:
 
 获取 vxKernelVars[*CORE_NUM*]的成员变量*cpu_vxIntStackBase*和*cpu_vxIntStackEnd*的值，分别保存在 R0 和 R3 寄存器中，即系统中断栈的栈底和栈顶。
 
-```assembly
+```c
 check_interrupt_stack:
 
 	_ARM_PER_CPU_VALUE_GET (r0, r2, vxIntStackBase)
@@ -485,7 +485,7 @@ check_interrupt_stack:
 - 如果 DFAR 小于*cpu_vxIntStackBase*，说明异常有可能是中断栈上溢导致的，跳转到 check_int_end 继续进行检查（[3.4.5.2 章节](##### 3.4.5.2 是否发生中断栈上溢)）。
 - 如果 DFAR 大于*cpu_vxIntStackBase + vxIntStackUnderflowSize*，说明异常发生在其他位置，跳转到 check_int_end（[3.4.5.2 章节](##### 3.4.5.2 是否发生中断栈上溢)）继续进行检查，否则说明异常发生在*vxIntStackUnderflowSize*的范围内，即中断栈下溢，进入 int_stk_underrun 处执行。
 
-```assembly
+```c
 LDR r2, L$_vxIntStackUnderflowSize
 LDR r2, [r2]            /* r2 -> vxIntStackUnderflowSize */
 
@@ -509,7 +509,7 @@ BGT check_int_end       /* if > base-Guard, fault lies elsewhere */
 - 如果 DFAR 大于*cpu_vxIntStackEnd*，说明异常不是中断栈溢出导致的，跳转到 move_back_to_stack 处执行。
 - 如果 DFAR 小于等于*cpu_vxIntStackEnd* - _vxIntStackOverflowSize_，说明异常发生在其他地址或扩大中断栈后依然上溢，因此跳转到 move_back_to_stack 处执行，否则说明异常发生在*vxIntStackOverflowSize*范围内，即中断栈上溢，进入 int_stk_overrun 处执行。
 
-```assembly
+```c
 check_int_end:
     LDR r2, L$_vxIntStackOverflowSize
     LDR r2, [r2]            /* r2 -> vxIntStackOverflowSize */
@@ -530,7 +530,7 @@ check_int_end:
 
 如果 SP*svc 小于*cpu_vxIntStackBase*（R0）+ \_vxIntStackUnderflowSize*，说明中断栈向下扩大后可以避免溢出，跳转到 enable_guard_region（[3.4.6 扩大栈空间](###3.4.6 扩大栈空间)）进行 vmStateSet()操作，否则跳转 move_back_to_stack。
 
-```assembly
+```c
 int_stk_underrun:
 	ADD r0, r0, r2          /* offset by guard page */
 	CMP r1, r0
@@ -548,7 +548,7 @@ int_stk_underrun:
 
 如果 SP*svc 大于*cpu_vxIntStackEnd*（R3）+ \_vxIntStackOverflowSize*（R2），说明中断栈向上扩大后可以避免溢出，跳转到 enable_guard_region（[3.4.6 扩大栈空间](###3.4.6 扩大栈空间)）进行 vmStateSet()操作，否则跳转 move_back_to_stack。
 
-```assembly
+```c
 int_stk_overrun:
 	SUB r3, r3, r2          /* offset by guard page */
 	CMP r1, r3
@@ -570,7 +570,7 @@ int_stk_overrun:
 
 设置完成后进入常规异常处理，[3.5 章节](###3.5 常规异常处理)。
 
-```assembly
+```c
 enable_guard_region:
 
     /* save regs on stack prior to calling out... */
@@ -623,7 +623,7 @@ enable_guard_region:
 
 设置 R0 的值为 EXC_OFF_DATA，然后跳转到通用异常处理程序 L$excEnterCommon 处执行。
 
-```assembly
+```c
 move_back_to_stack:
 	/*
 	 * move OSM stack pointer to point back to ESF info area...
@@ -687,7 +687,7 @@ Entry:
 
 获取 SPSR，保存在异常栈中，并将 SP\_*abt*保存在 R2 寄存器中；然后切换到关中断状态下的 SVC 模式。
 
-```assembly
+```c
 /* save SPSR in save area */
 
 MRS r3, spsr
@@ -724,7 +724,7 @@ MSR cpsr, r1
 
 检查*cpu_taskIdCurrent->excCnt*是否为 0，不为 0 则用 R1 保存 SP\__svc_，从 SP\_*abt*中恢复 R4 寄存器的值，再跳转至 alreadyOnExcStack（[4.4 章节](###4.4 在任务异常栈构建上下文)）处执行。
 
-```assembly
+```c
 _ARM_PER_CPU_VALUE_GET (r1, r4, taskIdCurrent)  /* r1 -> TCB */
 MOV r4, r1                          /* r4 -> TCB */
 TEQ r1, #0
@@ -741,7 +741,7 @@ BNE alreadyOnExcStack
 
 从 SP\_*abt*中恢复 R4 寄存器的值（该操作的目的是后续构建异常上下文时要保存发生异常时 R4 寄存器的原始值），获取*cpu_taskIdCurrent->pExcStackBase*保存在 R1 中，将 SVC 模式的栈指针 SP\_*svc*入任务异常栈保存，再将栈且换到任务异常栈，最后从任务异常栈中将 SP\_*svc*出栈保存在 R1 寄存器中。
 
-```assembly
+```c
 /* switch to task's exception stack */
 MOV r1, r4                          /* r1 -> TCB */
 LDR r4, [r2,#4*5]                    /* restore r4 TODO:optimize */
@@ -766,7 +766,7 @@ LDMFD sp!, {r1}                       /* get back svc_sp */
 - SP\_*svc*减 4 \* 11 字节，为保存 R4-R11 寄存器预留空间
 - 通过 SPSR 判断异常发生时的处理器模式
 
-```assembly
+```c
 alreadyOnExcStack：
     STMFD sp!, {r0-r3}
 
@@ -801,7 +801,7 @@ alreadyOnExcStack：
 
 如果异常发生在 User 模式，则通过`STM{<amode>}{<c>}{<q>} <Rn>, <registers>^`指令将 User 模式的 R4-R14 寄存器保存在任务异常栈，然后跳转到 L$regsSaved 处执行。注：\<registers\>后带^表示访问 User 模式的寄存器。
 
-```assembly
+```c
 STMEQIA sp, {r4-r14}^        /* EQ => USR mode */
 
 BEQ L$regsSaved
@@ -811,7 +811,7 @@ BEQ L$regsSaved
 
 如果异常发生在非 User 模式，需要用 R0 暂存 CPSR，R1 暂存任务异常栈，然后在关中断的状态下切换到发生异常的处理器模式，将 R4-R14 寄存器保存到任务异常栈。这样做的目的是获取 SP\_<_mode_>和 LR\_<_mode_>。
 
-```assembly
+```c
 /*
 * not USR mode so must change to USR mode to get sp,lr
 * SYSTEM mode is also handled this way (but needn't be)
@@ -845,7 +845,7 @@ STMIA r1, {r4-r14}         /* save regs */
 
 最后通过恢复 CPSR 切换回 SVC 模式。
 
-```assembly
+```c
 /*
 * check if it's SVC mode and, if so, overwrite stored sp.
 * stack pointed to by r1 contains
@@ -868,7 +868,7 @@ MSR cpsr, r0
 
 从 SP\_*abt*中恢复 R0-R3 寄存器的值（注意使用的是 LDMIB 指令，跳过了 SP\_*abt*开头指向的 SPSR），入任务异常栈保存。
 
-```assembly
+```c
 L$regsSaved:
 
     /* transfer r0-r3 to stack */
@@ -898,7 +898,7 @@ SP: SP_svc, Task Exception Stack, Full Descending
 
 从任务异常栈中获取 SPSR，将模式位修改为 SVC 后写入 CPSR，==目的是恢复异常发生时的中断状态==。
 
-```assembly
+```c
 _ARM_PER_CPU_VALUE_GET (r0, r1, taskIdCurrent)  /* r0 -> TCB */
 TEQ r0, #0                  /* Check if in pre-kernel */
 
@@ -916,7 +916,7 @@ MSR cpsr, r0                 /* and write it to CPSR */
 
 将 SP\_*svc*赋值给 R1，R0 指向任务异常栈中的 PC，调用 C 语言异常处理程序 excExcContinue()。
 
-```assembly
+```c
 MOV r1, sp                   /* r1 -> REG_SET */
 ADD r0, r1, #4*15             /* r0 -> ESF (PC, PSR, vector) */
 LDR fp, [r1, #4*11]
@@ -937,7 +937,7 @@ excExcContinue()接口会根据异常类型调用 C 异常向量表 excHandlerTb
 
 从 excExcHandle()返回后首先关闭中断，防止异常返回过程被打断。
 
-```assembly
+```c
 /* exception handler returned (SVC32)-disable interrupts (IRQs) again */
 MRS r0, cpsr
 
@@ -954,7 +954,7 @@ MSR cpsr, r0
 
 从任务异常栈中获取 SP\__abt_，即处理器 Abort 模式的栈基址。将任务异常栈中的 R0-R3 出栈，转存至 Abort 模式的栈空间中。
 
-```assembly
+```c
 LDR r2, [sp, #4*20]           /* r2 -> exception save area */
 LDMFD sp!, {r3-r6}             /* get r0-r3 */
 STMIB r2, {r3-r6}
@@ -964,7 +964,7 @@ STMIB r2, {r3-r6}
 
 从任务异常栈中获取 SPSR，判断异常发生时的处理器模式。如果是 User 模式，则从任务异常栈中将 R4-LR 寄存器出栈恢复，并跳转到 L$regsRestored 处执行。
 
-```assembly
+```c
 LDR r3, [sp, #4*12]           /* get PSR of faulting mode */
 TST r3,#MASK_SUBMODE
 
@@ -981,7 +981,7 @@ BEQ L$regsRestored
 
 最后恢复之前 R0 中保存的 CPSR，返回 SVC 模式。
 
-```assembly
+```c
 /* exception was not in USR mode so switch to mode to restore regs */
 
 MRS r0, cpsr                /* save PSR (SVC32, IRQs disabled) */
@@ -1052,7 +1052,7 @@ SP: SP_svc, Task Exception Stack, Full Descending
 
 将 TTBR0 出栈，该值已经无用。
 
-```assembly
+```c
 /* r4..r14 of faulting mode now restored */
 ADD sp, sp, #4*11         /* strip r4..r14 from stack */
 
@@ -1083,7 +1083,7 @@ SP: SP_abt
 
 获取*cpu_taskIdCurrent->excCnt*，如果*cpu_taskIdCurrent*不为空则将*cpu_taskIdCurrent->excCnt*减 1 并保存。
 
-```assembly
+```c
 /* decrement excCnt prior to shifting back */
 _ARM_PER_CPU_VALUE_GET (r0, r1, taskIdCurrent)  /* r0 -> TCB */
 TEQ r0, #0                  /* Check if in pre-kernel */
@@ -1102,7 +1102,7 @@ STRNE r1, [r0, #WIND_TCB_EXC_CNT]      /* and store in TCB */
   - *LDM*指令的寄存器列表中有 PC 寄存器时，^符号表示同时将 SPSR 寄存器的值写入 CPSR 寄存器中
   - SP\_*abt*在整个异常处理过程中都未发生变化
 
-```assembly
+```c
 /*
  * r0 = address of exception vector - discarded
  * r1 = svc_sp at time of exception - discarded

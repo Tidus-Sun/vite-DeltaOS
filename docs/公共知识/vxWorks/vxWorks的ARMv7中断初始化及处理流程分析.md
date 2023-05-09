@@ -68,7 +68,7 @@ ARMv7 的寄存器集如下表格所示：
 - R14 用于保存子程序返回地址，记作 LR
 - R15 用于程序计数器，记作 PC
 
-==这意味着编译器编译 C 函数时会将 R4-R11 寄存器按需入栈保存，编写汇编程序调用 C 函数时需要手动将 R0-R3，IP，LR 入栈保存。==入栈顺序为编号大的寄存器在栈的高地址，编号小的寄存器在低地址，出栈时编号小的寄存器先出栈。
+`这意味着编译器编译 C 函数时会将 R4-R11 寄存器按需入栈保存，编写汇编程序调用 C 函数时需要手动将 R0-R3，IP，LR 入栈保存。`入栈顺序为编号大的寄存器在栈的高地址，编号小的寄存器在低地址，出栈时编号小的寄存器先出栈。
 
 ## 2.初始化
 
@@ -78,7 +78,7 @@ excVecBaseSet 的调用路线为 sysStart()->SYS_HW_INIT_0()[^1]->excVecBaseSet(
 
 该接口会将 LOCAL_MEM_LOCAL_ADRS 作为异常向量表基址保存在全局变量 excVecBaseAddr 中，以便后续写入 VBAR 寄存器。
 
-全局结构体变量==excEnterTbl==用于保存异常向量表中各向量的入口地址及对应的处理函数，该变量的默认定义如下：
+全局结构体变量`excEnterTbl`用于保存异常向量表中各向量的入口地址及对应的处理函数，该变量的默认定义如下：
 
 ```c
 LOCAL EXC_TBL excEnterTbl[NUM_EXC_VECS] =
@@ -262,7 +262,7 @@ L$_irqStack_3:        .long   VAR(irqStack_3)
 
 ###### 2.2.2.1.3 根据核索引号获取对应的栈空间
 
-==除 0 号核外的其他核运行时，会根据获取的核索引号获取对应的栈基址。==至此宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 运行完成，R0 的值为栈基址，R1 得值为处理器核索引号。
+`除 0 号核外的其他核运行时，会根据获取的核索引号获取对应的栈基址。`至此宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 运行完成，R0 的值为栈基址，R1 得值为处理器核索引号。
 
 下面以 0 号核的 Undefined 异常为例说明宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 的功能，宏依次展开可得：
 
@@ -287,7 +287,7 @@ VAR_LABEL(undefSaveArea_0) .fill 7 + EXTRA_STACK, 4  /* 7 registers: SPSR,r0-r4,
 
 `LDR r0, L$_undefSaveArea_0`指令将 undefSaveArea_0 所标记的地址保存在 r0 寄存器中。
 
-==注意，在系统支持 OSM 处理时 Abort 模式异常栈增加了 OSM Stack，与其他异常模式不同。==
+`注意，在系统支持 OSM 处理时 Abort 模式异常栈增加了 OSM Stack，与其他异常模式不同。`
 
 ```c
 VAR_LABEL(abortSaveArea)
@@ -370,7 +370,7 @@ L$_vxKernelVars:      .long   VAR(deltaKernelVars)
 
 ##### 2.2.2.3 保存栈空间基址到全局变量
 
-通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。==注意，vxWorks 的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。==
+通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。`注意，vxWorks 的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。`
 
 至此，Undefined，Abort，Swi(SVC)和 IRQ 模式的栈基址都保存在了全局变量 deltaKernelVars 中。
 
@@ -421,7 +421,7 @@ LDR sp, [sp]
 
 ##### 2.2.2.5 设置 User 模式栈
 
-切换回 SVC 模式，恢复栈中保存的寄存器后再将 0x0 入栈保存，通过`LDMFD sp, {sp}^`指令将 User 模式的 SP 置为 0，最后纠正 SVC 的栈指针（因为之前将 r1 入栈保存，而该值仅用于将 SP\_*usr*清零，无需出栈恢复），结束运行返回 excVecInit。==PS：使用 LDM 指令且寄存器列表中不含 PC 寄存器时，\^符号代表使用 User 模式的寄存器，即{sp}^表示 SP\__usr_==。
+切换回 SVC 模式，恢复栈中保存的寄存器后再将 0x0 入栈保存，通过`LDMFD sp, {sp}^`指令将 User 模式的 SP 置为 0，最后纠正 SVC 的栈指针（因为之前将 r1 入栈保存，而该值仅用于将 SP\_*usr*清零，无需出栈恢复），结束运行返回 excVecInit。`PS：使用 LDM 指令且寄存器列表中不含 PC 寄存器时，\^符号代表使用 User 模式的寄存器，即{sp}^表示 SP\__usr_`。
 
 ```c
 MSR cpsr, r0
@@ -464,9 +464,9 @@ for (i = 0; i < NUM_EXC_VECS; ++i)
 }
 ```
 
-vxWorks 设计在内存的==向量表基址+excPtrTableOffset==处依次存放中断异常处理程序的地址，excPtrTableOffset 为 0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低 12 位为基于 PC 的偏移地址，需要计算后形成最终的机器码写入向量表。
+vxWorks 设计在内存的`向量表基址+excPtrTableOffset`处依次存放中断异常处理程序的地址，excPtrTableOffset 为 0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低 12 位为基于 PC 的偏移地址，需要计算后形成最终的机器码写入向量表。
 
-偏移的计算方法是==- 0x8 + 0x100 + - 0x4==。\- 0x8 是因为 ARM 架构中 PC 指向当前执行指令后的第二条指令，即 PC 等于当前指令地址+8；加偏移 0x100 后减 0x4 是因为 Non-Secoure 状态下没有使用 Reset 中断，不需要对应的中断处理程序，Undefined Instruction 中断处理程序排在第一个，因此 Undefined Instruction 中断入口与其处理程序的偏移是 0x100 - 0x4。
+偏移的计算方法是`- 0x8 + 0x100 + - 0x4`。\- 0x8 是因为 ARM 架构中 PC 指向当前执行指令后的第二条指令，即 PC 等于当前指令地址+8；加偏移 0x100 后减 0x4 是因为 Non-Secoure 状态下没有使用 Reset 中断，不需要对应的中断处理程序，Undefined Instruction 中断处理程序排在第一个，因此 Undefined Instruction 中断入口与其处理程序的偏移是 0x100 - 0x4。
 
 填充完向量表后在 0x100 偏移处填充中断异常处理程序的地址，就完成了整个向量表的构建。
 
@@ -625,7 +625,7 @@ STR	lr, [r3]
 
 将 R0-R2，R12，LR_svc 入栈保存；将 cpu_intCnt 的值加 1 后写回 cpu_intCnt 中。
 
-==此处保存上下文的目的是为下一步调用 C 语言中断处理程序做准备，由于编译器会将 R4-R11 寄存器按需入栈保存，因此调用 C 函数只需要将 R0-R3，IP(R12)和 LR 入栈保存即可（此处 R3 的值无需保留，所以不需要入栈）。==
+`此处保存上下文的目的是为下一步调用 C 语言中断处理程序做准备，由于编译器会将 R4-R11 寄存器按需入栈保存，因此调用 C 函数只需要将 R0-R3，IP(R12)和 LR 入栈保存即可（此处 R3 的值无需保留，所以不需要入栈）。`
 
 ### 3.5 进入 C 语言中断处理程序
 
@@ -649,7 +649,7 @@ intEnt 的主要工作是产生中断进入 IRQ 模式时，保存基础上下�
 
 GICv2 的结构及编程模型在另外的文档专门描述，本章节仅分析 GICv2 驱动安装的中断处理程序 vxbArmGicNonPreempISR。
 
-vxbArmGicNonPreempISR 中首先调用 vxbArmGicLvlVecChk，该接口读取 GICC_IAR 寄存获取处于 pending 状态的优先级最高的中断号，并将中断号通过 level 和 vector 变量返回，==读 GICC_IAR 寄存器即是中断响应操作，中断会从 pending 状态变为 active 状态。==如果是 SGI 中断还会通过 srcCpuId 返回发送 SGI 中断的处理器核 ID。注意，对于 SGI 中断，该接口会将中断号加上中断控制器支持的最大中断号 armGicLinesNum，对 SGI 中断号进行了重新定义。
+vxbArmGicNonPreempISR 中首先调用 vxbArmGicLvlVecChk，该接口读取 GICC_IAR 寄存获取处于 pending 状态的优先级最高的中断号，并将中断号通过 level 和 vector 变量返回，`读 GICC_IAR 寄存器即是中断响应操作，中断会从 pending 状态变为 active 状态。`如果是 SGI 中断还会通过 srcCpuId 返回发送 SGI 中断的处理器核 ID。注意，对于 SGI 中断，该接口会将中断号加上中断控制器支持的最大中断号 armGicLinesNum，对 SGI 中断号进行了重新定义。
 
 ```c
 if (vxbArmGicLvlVecChk (pVxbArmGicDrvCtrl->pInst, &level, &vector, &srcCpuId) == ERROR)
@@ -895,7 +895,7 @@ MSR	cpsr, r0
 
 在 IRQ 状态下，将 SPSR 的值从 SP_irq 中出栈，通过宏\_ARM_SPSR_SET 写入 SPSR 寄存器。
 
-从 SP_irq 中将保存的中断上下文全部出栈，恢复到被中断的状态继续运行，至此完成全部的中断处理。此处的汇编语法需要注意，当批量 Load 指令的寄存器列中有 PC 寄存器时，==^==符号表示将 SPSR 寄存器的内容恢复到 CPSR 寄存器中；寄存器列表中没有 PC 时，^表示在 SVC 模式下访问 USR 模式的寄存器。
+从 SP_irq 中将保存的中断上下文全部出栈，恢复到被中断的状态继续运行，至此完成全部的中断处理。此处的汇编语法需要注意，当批量 Load 指令的寄存器列中有 PC 寄存器时，`^`符号表示将 SPSR 寄存器的内容恢复到 CPSR 寄存器中；寄存器列表中没有 PC 时，^表示在 SVC 模式下访问 USR 模式的寄存器。
 
 ```c
 LDMFD	sp!, {r0}  /* restore SPSR */
@@ -942,7 +942,7 @@ typedef struct			/* REG_SET - ARM register set */
 } REG_SET;
 ```
 
-无论是 USR 模式还是 SVC 模式，都会将==R5-R12，SP 和 LR==寄存器保存在 cpu_taskIdCurrent->regs 中，差别是 USR 模式需要使用^符号保存 USR 模式下的寄存器。
+无论是 USR 模式还是 SVC 模式，都会将`R5-R12，SP 和 LR`寄存器保存在 cpu_taskIdCurrent->regs 中，差别是 USR 模式需要使用^符号保存 USR 模式下的寄存器。
 
 ```c
     LDR r3, [r2]                /* get task's CPSR from IRQ/FIQ stack */
@@ -958,7 +958,7 @@ skip_usr:
     STMIA r1, {r5-r12, sp, lr} /* store r5-r12, svc_[sp,lr] */
 ```
 
-从 SP_irq 中取出==CPSR，R0-R4，PC==，放入 R4-R10 中，再分别保存到 cpu_taskIdCurrent->regs。
+从 SP_irq 中取出`CPSR，R0-R4，PC`，放入 R4-R10 中，再分别保存到 cpu_taskIdCurrent->regs。
 
 读取 TTBR0 寄存器，获取页表基地址，保存到 cpu_taskIdCurrent->regs.ttbase，至此完成了任务所有上下文的保存工作。
 

@@ -37,7 +37,7 @@
 | 0x8  |    Supervisor Call    |    Supervisor Call    |    Hypervisor Call, from Hyp Mode    | Secure Monitor Call |
 | 0xC  |    Prefetch Abort     |    Prefetch Abort     |    Prefetch Abort, from Hyp Mode     |   Prefetch Abort    |
 | 0x10 |      Data Abort       |      Data Abort       |      Data Abort, from Hyp Mode       |     Data Abort      |
-| 0x14 |       Not Used        |       Not Used        |    HypTrap, or ==Hyp mode entry==    |      Not Used       |
+| 0x14 |       Not Used        |       Not Used        |     HypTrap, or `Hyp mode entry`     |      Not Used       |
 | 0x18 |     IRQ interrupt     |     IRQ interrupt     |            IRQ interrupt             |    IRQ interrupt    |
 | 0x1C |     FIQ interrupt     |     FIQ interrupt     |            FIQ interrupt             |    FIQ interrupt    |
 
@@ -92,7 +92,7 @@ Hyp 向量表的 0x14 是一下异常的入口：
 |         IRQ or FIQ         |        Address of next instruction to execute        |            PL1,or PL2            |
 | Virtual IRQ or Virtual FIQ |        Address of next instruction to execute        | PL1,and only in Non-secure state |
 
-当异常投递到 PL1 时，返回地址保存在 LR\_*\<mode\>*寄存器中，其值为首选返回地址==加==偏移量，具体如下：
+当异常投递到 PL1 时，返回地址保存在 LR\_*\<mode\>*寄存器中，其值为首选返回地址`加`偏移量，具体如下：
 
 |         Exception          | Offset |
 | :------------------------: | :----: |
@@ -149,7 +149,7 @@ vxWorks 运行在处理器的 Non-secure PL1&0 状态，只需考虑一张中断
 
 ### 3.1 基本信息入栈，修改栈指针
 
-通过前文可知，LR\_*abt*寄存器为导致异常的指令地址+8，因此需要减 8 后与 R0-R4 一起入栈保存，注意这里使用的是*STMIB*指令入栈，即满增栈，==后续的*L$excEnterCommon*代码段会在此时栈最低地址空余出的 4 个字节中保存 SPSR 寄存器的值==。
+通过前文可知，LR\_*abt*寄存器为导致异常的指令地址+8，因此需要减 8 后与 R0-R4 一起入栈保存，注意这里使用的是*STMIB*指令入栈，即满增栈，`后续的*L$excEnterCommon*代码段会在此时栈最低地址空余出的 4 个字节中保存 SPSR 寄存器的值`。
 
 ```c
 #if (_VX_CPU == _VX_ARMARCH7)
@@ -191,7 +191,7 @@ CLREX /* CLREX is only available for ARMv6K and above */
 
 在系统支持 OSM 处理时 Abort 模式异常栈增加了 OSM Stack，OSM Stack 用作满减栈，因此在保存过 R0-R4 和 LR 后将 SP 加 96\*4 个字节，指向栈顶。
 
-==所谓 OSM 处理，是系统初始化时通过 excOsmInit()接口设置与页大小对齐的 guard region（还需要调用 taskStackGuardPageEnable()进行使能），当任务的异常栈发生上溢导致 Data Abort 时，异常处理程序会调用 vmStateSet()接口将 guard region 大小的空间设置为可读写属性，从而扩大异常栈，避免上溢。==
+`所谓 OSM 处理，是系统初始化时通过 excOsmInit()接口设置与页大小对齐的 guard region（还需要调用 taskStackGuardPageEnable()进行使能），当任务的异常栈发生上溢导致 Data Abort 时，异常处理程序会调用 vmStateSet()接口将 guard region 大小的空间设置为可读写属性，从而扩大异常栈，避免上溢。`
 
 ```c
 /*
@@ -334,7 +334,7 @@ check_stack:
 
 #### 3.4.2 获取 SVC 模式栈指针
 
-在关中断的状态下切换到 SVC 模式，将 SVC 模式的栈指针保存在 R1 寄存器中后再切换回 Abort 模式。==获取 SP\_*svc*的目的是后续同时通过 SP\_*svc*和 DFAR 判断是否发生栈溢出==。
+在关中断的状态下切换到 SVC 模式，将 SVC 模式的栈指针保存在 R1 寄存器中后再切换回 Abort 模式。`获取 SP\_*svc*的目的是后续同时通过 SP\_*svc*和 DFAR 判断是否发生栈溢出`。
 
 ```c
 /* get SVC Mode stack pointer */
@@ -389,7 +389,7 @@ BNE check_interrupt_stack /* from Interrupt, check int stack */
 
 从*cpu_taskIdCurrent*（指针保存在 R2 中）中获取其成员变量 options，判断任务创建时是否设置了 VX_NO_STACK_PROTECT 属性，如果设置了 VX_NO_STACK_PROTECT 则不进行栈溢出检查，跳转到 move_back_to_stack 处执行。
 
-再获取*cpu_taskIdCurrent->excCnt*并判断是否为 0，为 0 说明==没有异常嵌套，无需检查异常栈溢出==，跳转到 move_back_to_stack 中执行。
+再获取*cpu_taskIdCurrent->excCnt*并判断是否为 0，为 0 说明`没有异常嵌套，无需检查异常栈溢出`，跳转到 move_back_to_stack 中执行。
 
 ```c
 LDR r0, [r2, #WIND_TCB_OPTIONS]     /* r0 -> options */
@@ -841,7 +841,7 @@ MSR cpsr, r3
 STMIA r1, {r4-r14}         /* save regs */
 ```
 
-==注意，此时需要检查异常是否发生在 SVC 模式中，如果是则刚刚在任务异常栈中保存的 SP\_*svc*不正确（已经是任务异常栈指针，而不是发生异常时的原始值），需要从任务异常栈中获取[4.4 章节](###4.4 在任务异常栈构建上下文)起始处保存的 SP\__svc_，再填回上下文中==。
+`注意，此时需要检查异常是否发生在 SVC 模式中，如果是则刚刚在任务异常栈中保存的 SP\_*svc*不正确（已经是任务异常栈指针，而不是发生异常时的原始值），需要从任务异常栈中获取[4.4 章节](###4.4 在任务异常栈构建上下文)起始处保存的 SP\__svc_，再填回上下文中`。
 
 最后通过恢复 CPSR 切换回 SVC 模式。
 
@@ -878,7 +878,7 @@ L$regsSaved:
     STMFD sp!, {r0-r3}
 ```
 
-==至此，任务异常栈中的异常上下文已经构建完毕，内容如下图所示：==
+`至此，任务异常栈中的异常上下文已经构建完毕，内容如下图所示：`
 
 ```c
 CPU mode: SVC, IRQ Disable
@@ -896,7 +896,7 @@ SP: SP_svc, Task Exception Stack, Full Descending
 
 再次获取 cpu_taskIdCurrent，如果 cpu_taskIdCurrent 不为空则将 cpu_taskIdCurrent->excCnt 加 1 并保存。
 
-从任务异常栈中获取 SPSR，将模式位修改为 SVC 后写入 CPSR，==目的是恢复异常发生时的中断状态==。
+从任务异常栈中获取 SPSR，将模式位修改为 SVC 后写入 CPSR，`目的是恢复异常发生时的中断状态`。
 
 ```c
 _ARM_PER_CPU_VALUE_GET (r0, r1, taskIdCurrent)  /* r0 -> TCB */
@@ -1095,7 +1095,7 @@ STRNE r1, [r0, #WIND_TCB_EXC_CNT]      /* and store in TCB */
 
 - 将任务异常栈中的剩余内容出栈，保存到 R0-R3 寄存器，任务异常栈指针恢复到处理本次异常前的位置
 - 恢复发生异常时的 SVC 模式的栈 SP\__svc_
-- 切换到 Abort 模式（==R3 中的 CPSR 是进入异常模式后的 CPSR，对于 Data Abort 是 Abort 模式，对于 Undefined Instrution 就是 Undefined 模式==）
+- 切换到 Abort 模式（`R3 中的 CPSR 是进入异常模式后的 CPSR，对于 Data Abort 是 Abort 模式，对于 Undefined Instrution 就是 Undefined 模式`）
 - 从 Abort 模式栈中获取 SPSR 的值，恢复到 SPSR 寄存器
 - 最终从 Abort 模式栈中恢复 R0-R3 寄存器，并将返回地址写入 PC，完成异常处理返回。
   - 注意此处使用的是*LDMIB*寄存器，出栈时跳过了 Abort 模式栈最开始保存的 SPSR
@@ -1121,7 +1121,7 @@ LDMIB r2, {r0-r3, pc}^
 
 ---
 
-> 注 1：==cpu_taskIdCurrent->pExcStackStart 是真正的异常栈基址==，任务创建时会因为各种情况调用 taskStackAllot 接口从任务异常栈基址上预留指定空间，并用 cpu_taskIdCurrent->pExcStackBase 记录修改后异常栈基址。
+> 注 1：`cpu_taskIdCurrent->pExcStackStart 是真正的异常栈基址`，任务创建时会因为各种情况调用 taskStackAllot 接口从任务异常栈基址上预留指定空间，并用 cpu_taskIdCurrent->pExcStackBase 记录修改后异常栈基址。
 
 > 注 2：vxWorks 创建任务时运行栈和异常栈空间时连续的，异常栈在更高的地址。异常栈栈顶（pExcStackEnd）比运行栈基址高 16 字节。（尚未对任务创建代码进行详细分析，目前结论通过系统运行时查看任务信息得到）
 

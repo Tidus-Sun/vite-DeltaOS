@@ -1,19 +1,22 @@
 <div align='center' ><font size=6>vxWorks的ARMv7中断初始化及处理流程分析</font></div>
 
+<br>
+
 <div align="center">
-    <img src="https://img.shields.io/badge/Write By-Tidus-blue">
-    <img src="https://img.shields.io/badge/Version-1.0-red">
-    <img src="https://img.shields.io/badge/Date-2020.06.08-ff69b4">
-    <img src="https://img.shields.io/badge/Platform-ARMv7 vxWorks-orange">
+    <img src="https://img.shields.io/badge/Platform-ARMv7 vxWorks-orange" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Version-1.0-red" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Date-2020.06.08-ff69b4" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Write By-Tidus-blue" style="display: inline-block;">
+    
 </div>
 
------
+---
 
-[TOC]
+[[TOC]]
 
 ## 1.预备知识
 
-以飞腾处理器为例，FT1500是ARMv8架构，但在vxWorks中切换到Non-Secoure AArch32模式运行，因此其中断异常模型与ARMv7架构相同。ARMv7的中断向量表定义如下（该表省略了Hyp和Monitor模式）：
+以飞腾处理器为例，FT1500 是 ARMv8 架构，但在 vxWorks 中切换到 Non-Secoure AArch32 模式运行，因此其中断异常模型与 ARMv7 架构相同。ARMv7 的中断向量表定义如下（该表省略了 Hyp 和 Monitor 模式）：
 
 | 偏移 |        Secure         |      Non-secure       |
 | :--: | :-------------------: | :-------------------: |
@@ -26,13 +29,13 @@
 | 0x18 |          IRQ          |          IRQ          |
 | 0x1C |          FIQ          |          FIQ          |
 
-ARMv7最多可有四张中断异常向量表，分别在Non-secure PL1&0、Non-secure PL2、Secure PL1和Secure Monitor。vxWorks运行在Non-secure PL1&0，因此只需考虑一张中断异常向量表的实现。
+ARMv7 最多可有四张中断异常向量表，分别在 Non-secure PL1&0、Non-secure PL2、Secure PL1 和 Secure Monitor。vxWorks 运行在 Non-secure PL1&0，因此只需考虑一张中断异常向量表的实现。
 
-在Non-secure中，SCTLR寄存器的V位决定了向量表的地址，为0时向量表基址保存在VBAR寄存器中，为1时在0xFFFF0000处，注意向量表需以32字节对齐。
+在 Non-secure 中，SCTLR 寄存器的 V 位决定了向量表的地址，为 0 时向量表基址保存在 VBAR 寄存器中，为 1 时在 0xFFFF0000 处，注意向量表需以 32 字节对齐。
 
-操作系统内核在处理器PL1等级的SVC模式下运行，RTP在PL0等级的User模式下运行，当处理器接收到中断或产生异常时，会自动跳转到中断异常向量表的对应入口，切换到相应的处理器模式并关闭中断。
+操作系统内核在处理器 PL1 等级的 SVC 模式下运行，RTP 在 PL0 等级的 User 模式下运行，当处理器接收到中断或产生异常时，会自动跳转到中断异常向量表的对应入口，切换到相应的处理器模式并关闭中断。
 
-ARMv7的寄存器集如下表格所示：
+ARMv7 的寄存器集如下表格所示：
 
 |  User   | System |   Hyp    | Supervisor |  Abort   | Undefined | Monitor  |   IRQ    |   FIQ    |
 | :-----: | :----: | :------: | :--------: | :------: | :-------: | :------: | :------: | :------: |
@@ -56,24 +59,24 @@ ARMv7的寄存器集如下表格所示：
 |         |        | SPSR_hyp |  SPSR_svc  | SPSR_abt | SPSR_und  | SPSR_mon | SPSR_irq | SPSR_fiq |
 |         |        | ELR_hyp  |            |          |           |          |          |          |
 
-根据ARM官方文档《Procedure Call Standard for the ARM® Architecture》可知：
+根据 ARM 官方文档《Procedure Call Standard for the ARM® Architecture》可知：
 
-* R0-R3用于在调用子程序时传递参数
-* R4-R11用于保存局部变量，子程序用到这些寄存器时必须入栈保存，返回时出栈恢复
-* R12用于子程序间的Scratch寄存器，记作IP
-* R13用于栈指针，记作SP
-* R14用于保存子程序返回地址，记作LR
-* R15用于程序计数器，记作PC
+- R0-R3 用于在调用子程序时传递参数
+- R4-R11 用于保存局部变量，子程序用到这些寄存器时必须入栈保存，返回时出栈恢复
+- R12 用于子程序间的 Scratch 寄存器，记作 IP
+- R13 用于栈指针，记作 SP
+- R14 用于保存子程序返回地址，记作 LR
+- R15 用于程序计数器，记作 PC
 
-==这意味着编译器编译C函数时会将R4-R11寄存器按需入栈保存，编写汇编程序调用C函数时需要手动将R0-R3，IP，LR入栈保存。==入栈顺序为编号大的寄存器在栈的高地址，编号小的寄存器在低地址，出栈时编号小的寄存器先出栈。
+==这意味着编译器编译 C 函数时会将 R4-R11 寄存器按需入栈保存，编写汇编程序调用 C 函数时需要手动将 R0-R3，IP，LR 入栈保存。==入栈顺序为编号大的寄存器在栈的高地址，编号小的寄存器在低地址，出栈时编号小的寄存器先出栈。
 
 ## 2.初始化
 
 ### 2.1 excVecBaseSet
 
-excVecBaseSet的调用路线为sysStart()->SYS_HW_INIT_0()[^1]->excVecBaseSet()。sysHwInit0在sysLib.c文件中实现，传递的参数*base*为宏LOCAL_MEM_LOCAL_ADRS，即RAM的起始地址，FT1500A中为0x80000000。
+excVecBaseSet 的调用路线为 sysStart()->SYS_HW_INIT_0()[^1]->excVecBaseSet()。sysHwInit0 在 sysLib.c 文件中实现，传递的参数*base*为宏 LOCAL_MEM_LOCAL_ADRS，即 RAM 的起始地址，FT1500A 中为 0x80000000。
 
-该接口会将LOCAL_MEM_LOCAL_ADRS作为异常向量表基址保存在全局变量excVecBaseAddr中，以便后续写入VBAR寄存器。 
+该接口会将 LOCAL_MEM_LOCAL_ADRS 作为异常向量表基址保存在全局变量 excVecBaseAddr 中，以便后续写入 VBAR 寄存器。
 
 全局结构体变量==excEnterTbl==用于保存异常向量表中各向量的入口地址及对应的处理函数，该变量的默认定义如下：
 
@@ -125,11 +128,11 @@ void excVecBaseSet (UINT32 base)
 
 ### 2.2 excVecInit
 
-中断异常初始化的大部分工作都在excVecInit中完成，主要分为以下几个操作：
+中断异常初始化的大部分工作都在 excVecInit 中完成，主要分为以下几个操作：
 
-#### 2.2.1 设置向量基址寄存器VBAR
+#### 2.2.1 设置向量基址寄存器 VBAR
 
-调用excVBARSet向VBAR寄存器写入异常向量表基址，向量表基址必须以32字节对齐，因此通过BIC指令将基址低5位清0。
+调用 excVBARSet 向 VBAR 寄存器写入异常向量表基址，向量表基址必须以 32 字节对齐，因此通过 BIC 指令将基址低 5 位清 0。
 
 ```assembly
 FUNC_BEGIN(excVBARSet)
@@ -139,9 +142,9 @@ FUNC_BEGIN(excVBARSet)
 FUNC_END(excVBARSet)
 ```
 
-#### 2.2.2 调用armInitExceptionModes
+#### 2.2.2 调用 armInitExceptionModes
 
-armInitExceptionModes在coreExcALib.s文件中实现，该段汇编会获取Undefined，Abort，Swi(SVC)和IRQ模式预留的栈空间基址，保存在全局变量deltaKernelVars[VX_MAX_SMP_CPUS]对应的成员中。
+armInitExceptionModes 在 coreExcALib.s 文件中实现，该段汇编会获取 Undefined，Abort，Swi(SVC)和 IRQ 模式预留的栈空间基址，保存在全局变量 deltaKernelVars[VX_MAX_SMP_CPUS]对应的成员中。
 
 ```assembly
 #if defined(_WRS_CONFIG_MULTI_CLUSTERS) && defined(_WRS_CONFIG_SMP)
@@ -169,9 +172,9 @@ armInitExceptionModes在coreExcALib.s文件中实现，该段汇编会获取Unde
 #endif /*_WRS_CONFIG_SMP*/
 ```
 
-##### 2.2.2.1 宏_ARM_PER_CPU_SAVE_AREA_ADR_GET
+##### 2.2.2.1 宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET
 
-宏_ARM_PER_CPU_SAVE_AREA_ADR_GET的目的是根据处理器核索引号获取其对应的处理器异常模式所使用的栈空间。
+宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 的目的是根据处理器核索引号获取其对应的处理器异常模式所使用的栈空间。
 
 ```assembly
 #define _ARM_PER_CPU_SAVE_AREA_ADR_GET(r, scratch, label)    \
@@ -211,12 +214,12 @@ armInitExceptionModes在coreExcALib.s文件中实现，该段汇编会获取Unde
 
 ###### 2.2.2.1.1 获取处理器核的索引号
 
-先通过宏_ARM_CPU_INDEX_GET获取处理器核的索引号，注意vxWorks原始代码只获取MPIDR寄存器的低4位，而16核FT1500的ID由Aff1和Aff0组成，因此需要对该宏进行改写：
+先通过宏\_ARM_CPU_INDEX_GET 获取处理器核的索引号，注意 vxWorks 原始代码只获取 MPIDR 寄存器的低 4 位，而 16 核 FT1500 的 ID 由 Aff1 和 Aff0 组成，因此需要对该宏进行改写：
 
 ```assembly
 #define _ARM_CPU_INDEX_GET(r)              \
     stmfd sp!, {r2};\
-    MRC p15, 0, r2, c0, c0, 5;\ /*读取MPIDR寄存器*/ 
+    MRC p15, 0, r2, c0, c0, 5;\ /*读取MPIDR寄存器*/
     MOV r, r2, LSR#8;\
     AND r, r, #0xFF;\           /*右移8位获取Aff1*/
     MOV r, r, LSL#2;\           /*再左移两位，相当于Aff1 * 2*/
@@ -225,15 +228,15 @@ armInitExceptionModes在coreExcALib.s文件中实现，该段汇编会获取Unde
     ldmfd sp!, {r2}
 ```
 
-###### 2.2.2.1.2 获取预留的栈基址（0号核）
+###### 2.2.2.1.2 获取预留的栈基址（0 号核）
 
-通过宏_ARM_PER_CPU_CONCAT_CPU将异常名称和处理器核组成一个“标签”，该标签通过.long伪汇编存储了对应异常模式栈基址。
+通过宏\_ARM_PER_CPU_CONCAT_CPU 将异常名称和处理器核组成一个“标签”，该标签通过.long 伪汇编存储了对应异常模式栈基址。
 
 ```assembly
 #define _ARM_PER_CPU_CONCAT_CPU(label, cpu) L$_##label##_##cpu
 ```
 
-每个核都有4个异常模式栈，vxWorks默认只定义了4个核的异常模式栈，如果要支持大于4个核的处理器，要增加其他核异常栈的定义。
+每个核都有 4 个异常模式栈，vxWorks 默认只定义了 4 个核的异常模式栈，如果要支持大于 4 个核的处理器，要增加其他核异常栈的定义。
 
 ```assembly
 L$_undefSaveArea_0:   .long   VAR(undefSaveArea_0)
@@ -259,9 +262,9 @@ L$_irqStack_3:        .long   VAR(irqStack_3)
 
 ###### 2.2.2.1.3 根据核索引号获取对应的栈空间
 
-==除0号核外的其他核运行时，会根据获取的核索引号获取对应的栈基址。==至此宏_ARM_PER_CPU_SAVE_AREA_ADR_GET运行完成，R0的值为栈基址，R1得值为处理器核索引号。
+==除 0 号核外的其他核运行时，会根据获取的核索引号获取对应的栈基址。==至此宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 运行完成，R0 的值为栈基址，R1 得值为处理器核索引号。
 
-下面以0号核的Undefined异常为例说明宏_ARM_PER_CPU_SAVE_AREA_ADR_GET的功能，宏依次展开可得：
+下面以 0 号核的 Undefined 异常为例说明宏\_ARM_PER_CPU_SAVE_AREA_ADR_GET 的功能，宏依次展开可得：
 
 ```assembly
 _ARM_PER_CPU_SAVE_AREA_ADR_GET(r0, r1, undefSaveArea)
@@ -269,22 +272,22 @@ LDR r0, _ARM_PER_CPU_CONCAT_CPU(undefSaveArea,0)
 LDR r0, L$_undefSaveArea_0
 ```
 
-L$_undefSaveArea_0等标签同样定义在coreExcALib.s中（宏VAR无实际意义）
+L$\_undefSaveArea_0 等标签同样定义在 coreExcALib.s 中（宏 VAR 无实际意义）
 
 ```assembly
 L$_undefSaveArea_0:   .long   VAR(undefSaveArea_0)
 ```
 
-undefSaveArea_0标记了处理器进入Undefined模式后使用的栈基址，其使用伪汇编.fill预留了*7 + EXTRA_STACK*个4字节的空间。
+undefSaveArea_0 标记了处理器进入 Undefined 模式后使用的栈基址，其使用伪汇编.fill 预留了*7 + EXTRA_STACK*个 4 字节的空间。
 
 ```assembly
 VAR_LABEL(undefSaveArea)
 VAR_LABEL(undefSaveArea_0) .fill 7 + EXTRA_STACK, 4  /* 7 registers: SPSR,r0-r4,lr */
 ```
 
-`LDR r0, L$_undefSaveArea_0`指令将undefSaveArea_0所标记的地址保存在r0寄存器中。
+`LDR r0, L$_undefSaveArea_0`指令将 undefSaveArea_0 所标记的地址保存在 r0 寄存器中。
 
-==注意，在系统支持OSM处理时Abort模式异常栈增加了OSM Stack，与其他异常模式不同。==
+==注意，在系统支持 OSM 处理时 Abort 模式异常栈增加了 OSM Stack，与其他异常模式不同。==
 
 ```assembly
 VAR_LABEL(abortSaveArea)
@@ -297,9 +300,9 @@ VAR_LABEL(abortSaveArea_0) .fill 7 + EXTRA_STACK, 4  /* 7 registers: SPSR,r0-r4,
 #endif  /* _WRS_OSM_INIT */
 ```
 
-##### 2.2.2.2 宏_ARM_PER_CPU_ADRS_GET
+##### 2.2.2.2 宏\_ARM_PER_CPU_ADRS_GET
 
-宏_ARM_PER_CPU_ADRS_GET的目的是获取全局变量deltaKernelVars[VX_MAX_SMP_CPUS]中保存处理器异常状态栈基址的成员变量的地址。注意该全局变量是一个结构体数组，每个处理器核对应数组中的一个成员。deltaKernelVars和结构体WIND_VARS的定义如下（只列出了这次需要获取的成员）：
+宏\_ARM_PER_CPU_ADRS_GET 的目的是获取全局变量 deltaKernelVars[VX_MAX_SMP_CPUS]中保存处理器异常状态栈基址的成员变量的地址。注意该全局变量是一个结构体数组，每个处理器核对应数组中的一个成员。deltaKernelVars 和结构体 WIND_VARS 的定义如下（只列出了这次需要获取的成员）：
 
 ```c
 WIND_VARS  _WRS_VX_KERNEL_VARS_SECTION_ATTR deltaKernelVars[VX_MAX_SMP_CPUS];
@@ -308,7 +311,7 @@ typedef struct windVars
 {
     _WIND_VARS vars;
 } WIND_VARS;
-	
+
 typedef struct _windVars
 {
 ...
@@ -334,7 +337,7 @@ typedef struct wind_vars_arch
 } WIND_VARS_ARCH;
 ```
 
-_ARM_PER_CPU_ADRS_GET的定义如下：
+\_ARM_PER_CPU_ADRS_GET 的定义如下：
 
 ```c
 #define _ARM_PER_CPU_ADRS_GET(r, scratch, label)            \
@@ -346,15 +349,15 @@ _ARM_PER_CPU_ADRS_GET的定义如下：
 
 同样以未定义异常`_ARM_PER_CPU_ADRS_GET(r1, r2, undefSaveArea)`为例：
 
-1. 首先获取处理器核的索引号保存在r1寄存器；
-2. 标签L\$\_vxKernelVars处保存了deltaKernelVars的地址，通过`LDR scratch, L$_vxKernelVars`将deltaKernelVars的地址保存在r2中；
+1. 首先获取处理器核的索引号保存在 r1 寄存器；
+2. 标签 L\$\_vxKernelVars 处保存了 deltaKernelVars 的地址，通过`LDR scratch, L$_vxKernelVars`将 deltaKernelVars 的地址保存在 r2 中；
 
 ```assembly
 L$_vxKernelVars:      .long   VAR(deltaKernelVars)
 ```
 
-3. 结构体WIND_VARS以128字节对齐，因此将核索引号乘以128即可得到对应核的WIND_VARS结构体地址；
-4. 再通过宏获取结构体成员char *cpu_undefSaveArea的偏移为0x4C+0xC=0x58，加上结构体变量基址后保存在r1寄存器中。
+3. 结构体 WIND_VARS 以 128 字节对齐，因此将核索引号乘以 128 即可得到对应核的 WIND_VARS 结构体地址；
+4. 再通过宏获取结构体成员 char \*cpu_undefSaveArea 的偏移为 0x4C+0xC=0x58，加上结构体变量基址后保存在 r1 寄存器中。
 
 ```c
 #define _ARM_WIND_VARS_OFFSET(label) _WRS_WIND_VARS_OFFSET_##label
@@ -367,18 +370,18 @@ L$_vxKernelVars:      .long   VAR(deltaKernelVars)
 
 ##### 2.2.2.3 保存栈空间基址到全局变量
 
-通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。==注意，vxWorks的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。==
+通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。==注意，vxWorks 的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。==
 
-至此，Undefined，Abort，Swi(SVC)和IRQ模式的栈基址都保存在了全局变量deltaKernelVars中。
+至此，Undefined，Abort，Swi(SVC)和 IRQ 模式的栈基址都保存在了全局变量 deltaKernelVars 中。
 
-##### 2.2.2.4 切换模式设置SP寄存器
+##### 2.2.2.4 切换模式设置 SP 寄存器
 
-依次切换到Undefined、Abort、和IRQ模式设置SP_<*mode*>寄存器。
+依次切换到 Undefined、Abort、和 IRQ 模式设置 SP\_<_mode_>寄存器。
 
 ```assembly
 MRS r0, cpsr
 BIC r1, r0, #MASK_MODE
-    
+
 ORR r1, r1, #I_BIT
 
 /*
@@ -400,11 +403,11 @@ _ARM_PER_CPU_ADRS_GET_SP(sp, r2, undefSaveArea)
 LDR sp, [sp]
 ```
 
-仍然以0号核Undefined模式为例，读CPSR后将M[4:0]置位0x1B(即Undefined模式)，再写回CPSR就可实现模式切换。
+仍然以 0 号核 Undefined 模式为例，读 CPSR 后将 M[4:0]置位 0x1B(即 Undefined 模式)，再写回 CPSR 就可实现模式切换。
 
-通过宏_ARM_PER_CPU_ADRS_GET_SP将SP\_*und*寄存器赋值为deltaKernelVars[0].vars.cpu_archVars.cpu_undefSaveArea的地址。
+通过宏\_ARM_PER_CPU_ADRS_GET_SP 将 SP\_*und*寄存器赋值为 deltaKernelVars[0].vars.cpu_archVars.cpu_undefSaveArea 的地址。
 
-最后通过`LDR sp, [sp]`指令把cpu_undefSaveArea中的值加载到SP\_*und*中，完成栈基址的设置。
+最后通过`LDR sp, [sp]`指令把 cpu_undefSaveArea 中的值加载到 SP\_*und*中，完成栈基址的设置。
 
 ```assembly
 #define _ARM_PER_CPU_ADRS_GET_SP(r, scratch, label)         \
@@ -414,11 +417,11 @@ LDR sp, [sp]
     ADD  r, scratch, ARM_HASH _ARM_WIND_VARS_OFFSET(label)  ; \
 ```
 
-注意调用SVC指令产生软中断进入的是SVC模式，与系统内核共用同一个SP寄存器，因此此处没有设置软中断的栈基址，仅保存在结构体中。
+注意调用 SVC 指令产生软中断进入的是 SVC 模式，与系统内核共用同一个 SP 寄存器，因此此处没有设置软中断的栈基址，仅保存在结构体中。
 
-##### 2.2.2.5 设置User模式栈
+##### 2.2.2.5 设置 User 模式栈
 
-切换回SVC模式，恢复栈中保存的寄存器后再将0x0入栈保存，通过`LDMFD sp, {sp}^`指令将User模式的SP置为0，最后纠正SVC的栈指针（因为之前将r1入栈保存，而该值仅用于将SP\_*usr*清零，无需出栈恢复），结束运行返回excVecInit。==PS：使用LDM指令且寄存器列表中不含PC寄存器时，\^符号代表使用User模式的寄存器，即{sp}^表示SP\_*usr*==。
+切换回 SVC 模式，恢复栈中保存的寄存器后再将 0x0 入栈保存，通过`LDMFD sp, {sp}^`指令将 User 模式的 SP 置为 0，最后纠正 SVC 的栈指针（因为之前将 r1 入栈保存，而该值仅用于将 SP\_*usr*清零，无需出栈恢复），结束运行返回 excVecInit。==PS：使用 LDM 指令且寄存器列表中不含 PC 寄存器时，\^符号代表使用 User 模式的寄存器，即{sp}^表示 SP\__usr_==。
 
 ```assembly
 MSR cpsr, r0
@@ -444,7 +447,7 @@ MOV pc, lr
 
 #### 2.2.3 构建中断异常向量表
 
-构建流程是从excEnterTbl中读取各异常入口地址，在该地址处写入`LDR PC,[PC,#offset]`指令的机器码，并在向量表+excPtrTableOffset处保存中断异常处理程序的地址，从而完成中断异常向量表的构建。
+构建流程是从 excEnterTbl 中读取各异常入口地址，在该地址处写入`LDR PC,[PC,#offset]`指令的机器码，并在向量表+excPtrTableOffset 处保存中断异常处理程序的地址，从而完成中断异常向量表的构建。
 
 ```c
 for (i = 0; i < NUM_EXC_VECS; ++i)
@@ -461,15 +464,15 @@ for (i = 0; i < NUM_EXC_VECS; ++i)
 }
 ```
 
-vxWorks设计在内存的==向量表基址+excPtrTableOffset==处依次存放中断异常处理程序的地址，excPtrTableOffset为0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低12位为基于PC的偏移地址，需要计算后形成最终的机器码写入向量表。
+vxWorks 设计在内存的==向量表基址+excPtrTableOffset==处依次存放中断异常处理程序的地址，excPtrTableOffset 为 0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低 12 位为基于 PC 的偏移地址，需要计算后形成最终的机器码写入向量表。
 
-偏移的计算方法是==- 0x8 + 0x100 +  - 0x4==。\- 0x8是因为ARM架构中PC指向当前执行指令后的第二条指令，即PC等于当前指令地址+8；加偏移0x100后减0x4是因为Non-Secoure状态下没有使用Reset中断，不需要对应的中断处理程序，Undefined Instruction中断处理程序排在第一个，因此Undefined Instruction中断入口与其处理程序的偏移是0x100 - 0x4。
+偏移的计算方法是==- 0x8 + 0x100 + - 0x4==。\- 0x8 是因为 ARM 架构中 PC 指向当前执行指令后的第二条指令，即 PC 等于当前指令地址+8；加偏移 0x100 后减 0x4 是因为 Non-Secoure 状态下没有使用 Reset 中断，不需要对应的中断处理程序，Undefined Instruction 中断处理程序排在第一个，因此 Undefined Instruction 中断入口与其处理程序的偏移是 0x100 - 0x4。
 
-填充完向量表后在0x100偏移处填充中断异常处理程序的地址，就完成了整个向量表的构建。
+填充完向量表后在 0x100 偏移处填充中断异常处理程序的地址，就完成了整个向量表的构建。
 
-#### 2.2.4 设置Reset向量 
+#### 2.2.4 设置 Reset 向量
 
-如前所述，Non-Secoure状态下没有使用Reset中断，因此在Reset向量的位置处填充了一条会导致未定义指令的机器码。
+如前所述，Non-Secoure 状态下没有使用 Reset 中断，因此在 Reset 向量的位置处填充了一条会导致未定义指令的机器码。
 
 ```c
 rstHandlerAddr = (EXC_OFF_RESET + (excEnterTbl[0].vecAddr - FIRST_VECTOR));
@@ -477,9 +480,9 @@ rstHandlerAddr = (EXC_OFF_RESET + (excEnterTbl[0].vecAddr - FIRST_VECTOR));
 *(UINT32 *)rstHandlerAddr = SWAP32_BE8(0xE7FDDEFE);
 ```
 
-#### 2.2.5 刷新Cache，记录默认中断处理程序
+#### 2.2.5 刷新 Cache，记录默认中断处理程序
 
-刷新中断异常向量表及处理程序处的Cache；用全局变量_func_armIrqHandler记录默认中断处理程序excIntHandle。
+刷新中断异常向量表及处理程序处的 Cache；用全局变量\_func_armIrqHandler 记录默认中断处理程序 excIntHandle。
 
 ```c
 CACHE_TEXT_UPDATE(rstHandlerAddr, EXC_TABLE_SIZE);
@@ -488,7 +491,7 @@ CACHE_TEXT_UPDATE(rstHandlerAddr + excPtrTableOffset, EXC_TABLE_SIZE);
 
 ### 2.3 usrKernelInit
 
-usrKernelInit中，会在内核初始化参数结构体kIP中保存系统中断栈的大小，以便后续分配、计算系统中断栈时使用。ARM平台的宏ISR_STACK_SIZE在BSP的config.h文件中定义。
+usrKernelInit 中，会在内核初始化参数结构体 kIP 中保存系统中断栈的大小，以便后续分配、计算系统中断栈时使用。ARM 平台的宏 ISR_STACK_SIZE 在 BSP 的 config.h 文件中定义。
 
 ```c
 kIP.intStackSize = ISR_STACK_SIZE;
@@ -496,7 +499,7 @@ kIP.intStackSize = ISR_STACK_SIZE;
 
 #### 2.3.1 kernelInit
 
-kernelInit接口中会在deltaKernelVars的成员变量cpu_vxIntStackBase和cpu_vxIntStackEnd中保存各个核的系统中断栈基址和结束地址，后续处理中断时会使用该栈。
+kernelInit 接口中会在 deltaKernelVars 的成员变量 cpu_vxIntStackBase 和 cpu_vxIntStackEnd 中保存各个核的系统中断栈基址和结束地址，后续处理中断时会使用该栈。
 
 ```c
 for (i = 0; i < _WRS_CPU_CONFIGURED (); i++)
@@ -521,20 +524,20 @@ for (i = 0; i < _WRS_CPU_CONFIGURED (); i++)
 
 	*pVxIntStackBase -= deltaIntStackUnderflowSize;
 	*pVxIntStackEnd  += deltaIntStackOverflowSize;
-    
+
 ...
 }  /* end for each CPU_CONFIGURED */
 ```
 
-## 3.汇编中断处理程序intEnt
+## 3.汇编中断处理程序 intEnt
 
-当发生中断时，处理器会切换到IRQ模式，并跳转到中断异常向量表的0x18处，根据前面的分析可知0x18处为一条LDR PC, [ ]指令，处理器会再跳转到intEnt中，本节将分析intEnt函数的相关操作。
+当发生中断时，处理器会切换到 IRQ 模式，并跳转到中断异常向量表的 0x18 处，根据前面的分析可知 0x18 处为一条 LDR PC, [ ]指令，处理器会再跳转到 intEnt 中，本节将分析 intEnt 函数的相关操作。
 
-### 3.1 保存IRQ模式上下文，切换到SVC
+### 3.1 保存 IRQ 模式上下文，切换到 SVC
 
-进入中断时，LR_irq寄存器的值为被中断指令的下一条指令的地址，因此LR寄存器的值需要减4以返回到正常的地址。此时的SP为SP_irq，excVecInit中已经设置过中断栈基址，可以直接使用。
+进入中断时，LR_irq 寄存器的值为被中断指令的下一条指令的地址，因此 LR 寄存器的值需要减 4 以返回到正常的地址。此时的 SP 为 SP_irq，excVecInit 中已经设置过中断栈基址，可以直接使用。
 
-将R0-R4和LR_irq寄存器入栈保存，SPSR寄存器的内容是被中断时CPSR寄存器的值，中断返回时需要恢复，因此也入栈保存。
+将 R0-R4 和 LR_irq 寄存器入栈保存，SPSR 寄存器的内容是被中断时 CPSR 寄存器的值，中断返回时需要恢复，因此也入栈保存。
 
 ```assembly
 /*
@@ -550,7 +553,7 @@ MRS	r0, spsr
 STMFD sp!, {r0}
 ```
 
-将SP_irq保存在R2中，然后将处理器切换到SVC模式并关闭中断。
+将 SP_irq 保存在 R2 中，然后将处理器切换到 SVC 模式并关闭中断。
 
 ```assembly
 /* save sp in non-banked reg so can access saved regs from SVC mode */
@@ -570,9 +573,9 @@ MSR	cpsr, r1
 
 ### 3.2 记录中断嵌套层数
 
-通过宏_ARM_PER_CPU_VALUE_AND_ADRS_GET获取deltaKernelVars中成员变量cpu_intNestingLevel的地址（保存在R3）和值（保存在R0）， 加1后写回cpu_intNestingLevel，以记录中断嵌套层数。
+通过宏\_ARM_PER_CPU_VALUE_AND_ADRS_GET 获取 deltaKernelVars 中成员变量 cpu_intNestingLevel 的地址（保存在 R3）和值（保存在 R0）， 加 1 后写回 cpu_intNestingLevel，以记录中断嵌套层数。
 
-获取deltaKernelVars中成员变量cpu_maxIntNestingLevel的值并与cpu_intNestingLevel比较，如果cpu_intNestingLevel较大则更新cpu_maxIntNestingLevel。
+获取 deltaKernelVars 中成员变量 cpu_maxIntNestingLevel 的值并与 cpu_intNestingLevel 比较，如果 cpu_intNestingLevel 较大则更新 cpu_maxIntNestingLevel。
 
 ```assembly
 	/* r3 = &intNestingLevel */
@@ -592,7 +595,7 @@ not_deeper:
 
 ### 3.3 判断是否切换到系统中断栈
 
-将SVC模式的栈SP_svc保存在R1中；根据cpu_intNestingLevel判断当前是否处在中断嵌套中（TEQ指令进行异或操作），如果已经处于嵌套状态则说明栈已经切换过，无需再切换，否则通过宏_ARM_PER_CPU_VALUE_GET_SPLR将SP_svc切换为deltaKernelVars成员变量cpu_vxIntStackBase的值，该变量保存了系统中断栈基址，在kernelInit接口中初始化，请参考本文[2.3.1](#2.3.1 kernelInit)节。
+将 SVC 模式的栈 SP_svc 保存在 R1 中；根据 cpu_intNestingLevel 判断当前是否处在中断嵌套中（TEQ 指令进行异或操作），如果已经处于嵌套状态则说明栈已经切换过，无需再切换，否则通过宏\_ARM_PER_CPU_VALUE_GET_SPLR 将 SP_svc 切换为 deltaKernelVars 成员变量 cpu_vxIntStackBase 的值，该变量保存了系统中断栈基址，在 kernelInit 接口中初始化，请参考本文[2.3.1](#2.3.1 kernelInit)节。
 
 ```assembly
 /* switch to SVC-mode interrupt stack if not already using it */
@@ -605,9 +608,9 @@ not_deeper:
 not_first_level:
 ```
 
-### 3.4 保存SVC模式上下文到系统中断栈
+### 3.4 保存 SVC 模式上下文到系统中断栈
 
-获取cpu_errno的值以及cpu_intCnt的地址，此时R0=cpu_errno，R1=SP_svc，R2=SP_irq，R3=&cpu_intCnt。
+获取 cpu_errno 的值以及 cpu_intCnt 的地址，此时 R0=cpu_errno，R1=SP_svc，R2=SP_irq，R3=&cpu_intCnt。
 
 ```assembly
 _ARM_PER_CPU_VALUE_GET (r0, r4, errno)
@@ -620,17 +623,17 @@ ADD	lr, lr, #1
 STR	lr, [r3]
 ```
 
-将R0-R2，R12，LR_svc入栈保存；将cpu_intCnt的值加1后写回cpu_intCnt中。
+将 R0-R2，R12，LR_svc 入栈保存；将 cpu_intCnt 的值加 1 后写回 cpu_intCnt 中。
 
-==此处保存上下文的目的是为下一步调用C语言中断处理程序做准备，由于编译器会将R4-R11寄存器按需入栈保存，因此调用C函数只需要将R0-R3，IP(R12)和LR入栈保存即可（此处R3的值无需保留，所以不需要入栈）。==
+==此处保存上下文的目的是为下一步调用 C 语言中断处理程序做准备，由于编译器会将 R4-R11 寄存器按需入栈保存，因此调用 C 函数只需要将 R0-R3，IP(R12)和 LR 入栈保存即可（此处 R3 的值无需保留，所以不需要入栈）。==
 
-### 3.5 进入C语言中断处理程序
+### 3.5 进入 C 语言中断处理程序
 
-通过L$__func_armIrqHandler将全局变量\_func_armIrqHandler的地址加载到r0寄存器，\_func_armIrqHandler指向C语言编写的中断处理程序，excVecInit中初始化为excIntHandle。GIC驱动初始化时通过代码`EXC_CONNECT_INTR_RTN (vxbArmGicNonPreempISR);`将中断处理程序修改为vxbArmGicNonPreempISR。
+通过 L$\_\_func_armIrqHandler 将全局变量\_func_armIrqHandler 的地址加载到 r0 寄存器，\_func_armIrqHandler 指向 C 语言编写的中断处理程序，excVecInit 中初始化为 excIntHandle。GIC 驱动初始化时通过代码`EXC_CONNECT_INTR_RTN (vxbArmGicNonPreempISR);`将中断处理程序修改为 vxbArmGicNonPreempISR。
 
-将汇编接口intExit的地址加载到LR_svc中，这样C语言处理程序指向完成后可以直接返回到intExit中。
+将汇编接口 intExit 的地址加载到 LR_svc 中，这样 C 语言处理程序指向完成后可以直接返回到 intExit 中。
 
-最终向PC加载\_func_armIrqHandler保存的地址，进入C语言中断处理程序。
+最终向 PC 加载\_func_armIrqHandler 保存的地址，进入 C 语言中断处理程序。
 
 ```assembly
 LDR r0, L$__func_armIrqHandler /* get IRQ handler pointer */
@@ -640,13 +643,13 @@ LDR pc, [r0]
 
 ### 3.6 小结
 
-intEnt的主要工作是产生中断进入IRQ模式时，保存基础上下文（R0-R4，PC，SPSR），然后切换到SVC模式，并将SP_svc切换到系统中断栈，再次保存基础上下文后调用C语言编写的中断处理程序。以上操作都是在关中断的状态下进行的。
+intEnt 的主要工作是产生中断进入 IRQ 模式时，保存基础上下文（R0-R4，PC，SPSR），然后切换到 SVC 模式，并将 SP_svc 切换到系统中断栈，再次保存基础上下文后调用 C 语言编写的中断处理程序。以上操作都是在关中断的状态下进行的。
 
-## 4. 中断处理程序vxbArmGicNonPreempISR
+## 4. 中断处理程序 vxbArmGicNonPreempISR
 
-GICv2的结构及编程模型在另外的文档专门描述，本章节仅分析GICv2驱动安装的中断处理程序vxbArmGicNonPreempISR。
+GICv2 的结构及编程模型在另外的文档专门描述，本章节仅分析 GICv2 驱动安装的中断处理程序 vxbArmGicNonPreempISR。
 
-vxbArmGicNonPreempISR中首先调用vxbArmGicLvlVecChk，该接口读取GICC_IAR寄存获取处于pending状态的优先级最高的中断号，并将中断号通过level和vector变量返回，==读GICC_IAR寄存器即是中断响应操作，中断会从pending状态变为active状态。==如果是SGI中断还会通过srcCpuId返回发送SGI中断的处理器核ID。注意，对于SGI中断，该接口会将中断号加上中断控制器支持的最大中断号armGicLinesNum，对SGI中断号进行了重新定义。
+vxbArmGicNonPreempISR 中首先调用 vxbArmGicLvlVecChk，该接口读取 GICC_IAR 寄存获取处于 pending 状态的优先级最高的中断号，并将中断号通过 level 和 vector 变量返回，==读 GICC_IAR 寄存器即是中断响应操作，中断会从 pending 状态变为 active 状态。==如果是 SGI 中断还会通过 srcCpuId 返回发送 SGI 中断的处理器核 ID。注意，对于 SGI 中断，该接口会将中断号加上中断控制器支持的最大中断号 armGicLinesNum，对 SGI 中断号进行了重新定义。
 
 ```c
 if (vxbArmGicLvlVecChk (pVxbArmGicDrvCtrl->pInst, &level, &vector, &srcCpuId) == ERROR)
@@ -655,7 +658,7 @@ if (vxbArmGicLvlVecChk (pVxbArmGicDrvCtrl->pInst, &level, &vector, &srcCpuId) ==
 }
 ```
 
-接着程序会循环检查并调用每个中断对应的真实处理程序，直到没有中断处于pending状态。
+接着程序会循环检查并调用每个中断对应的真实处理程序，直到没有中断处于 pending 状态。
 
 ```c
 do
@@ -672,7 +675,7 @@ do
 } while (vxbArmGicLvlVecChk (pVxbArmGicDrvCtrl->pInst, &level, &vector, &srcCpuId) != ERROR);
 ```
 
-真实中断处理的获取方法是通过中断号索引保存在pVxbArmGicDrvCtrl->isrHandle->pTop中的两级中断表，从而获取驱动安装的真实的中断处理程序。关于vxWorks的中断表结构会在GIC驱动文档中详细分析。
+真实中断处理的获取方法是通过中断号索引保存在 pVxbArmGicDrvCtrl->isrHandle->pTop 中的两级中断表，从而获取驱动安装的真实的中断处理程序。关于 vxWorks 的中断表结构会在 GIC 驱动文档中详细分析。
 
 ```c
 #define VXB_INTCTLR_ISR_CALL(ent, inpPin)                          \
@@ -685,7 +688,7 @@ do
     FAST int pinFlags = pPin->pinFlags;                            \
     /*                                                             \
      * In order to generate minimum instructions from              \
-     * ppcIntCtlrISR_INTR() for PPC with -Xlocals-on-stack option  \ 
+     * ppcIntCtlrISR_INTR() for PPC with -Xlocals-on-stack option  \
      * by the current Diab compiler, Ver5.6.0.0, don't assign pIsr \
      * to a regsiter.                                              \
      */                                                            \
@@ -696,17 +699,17 @@ do
 
 需要注意的是，此处的*pIsr*通常不是真正的设备中断处理程序，而是二次派发接口*isrDispatcher*，该接口会解析类型为*ISR_ID*的*pArg*，从而调用真实的设备中断处理程序。
 
-完成中断处理程序调用后必需调用vxbArmGicLvlVecAck写GICC_EOIR寄存器，以告知处理器中断处理完成。
+完成中断处理程序调用后必需调用 vxbArmGicLvlVecAck 写 GICC_EOIR 寄存器，以告知处理器中断处理完成。
 
-注意，从开始中断处理到vxbArmGicNonPreempISR接口执行完毕都没有使能处理器中断。
+注意，从开始中断处理到 vxbArmGicNonPreempISR 接口执行完毕都没有使能处理器中断。
 
-## 5. 汇编中断退出程序intExit
+## 5. 汇编中断退出程序 intExit
 
-根据[3.5](# 3.5 进入C语言中断处理程序)章节的分析可知vxbArmGicNonPreempISR执行完毕后会直接返回到intExit中。注意此时的SP_svc指向系统中断栈，已入栈保存的内容是cpu_errno，SP_svc，SP_irq，R12和LR_svc，可参考[3.4](# 3.4 保存上下文到系统中断栈)章节。
+根据[3.5](# 3.5 进入 C 语言中断处理程序)章节的分析可知 vxbArmGicNonPreempISR 执行完毕后会直接返回到 intExit 中。注意此时的 SP_svc 指向系统中断栈，已入栈保存的内容是 cpu_errno，SP_svc，SP_irq，R12 和 LR_svc，可参考[3.4](# 3.4 保存上下文到系统中断栈)章节。
 
-### 5.1 关中断，恢复cpu_errno
+### 5.1 关中断，恢复 cpu_errno
 
-首先读取CPSR寄存器，将I位置1后写回以关闭IRQ中断。再将栈中保存的cpu_errno出栈，恢复到deltaKernelVars中。
+首先读取 CPSR 寄存器，将 I 位置 1 后写回以关闭 IRQ 中断。再将栈中保存的 cpu_errno 出栈，恢复到 deltaKernelVars 中。
 
 ```assembly
 /* disable IRQs */
@@ -725,7 +728,7 @@ STR lr, [r0]      /* restore errno */
 
 ### 5.2 判断是否处于中断嵌套
 
-获取cpu_intNestingLevel，判断是否处于中断嵌套中（该值在进入中断时增加，请参考[3.2](# 3.2 记录中断嵌套层数)章节），如果是则跳转到intExit_RTI执行中断退出，请参考[5.6](# 5.6 退出流程intExit_RTI)章节。
+获取 cpu_intNestingLevel，判断是否处于中断嵌套中（该值在进入中断时增加，请参考[3.2](# 3.2 记录中断嵌套层数)章节），如果是则跳转到 intExit_RTI 执行中断退出，请参考[5.6](# 5.6 退出流程 intExit_RTI)章节。
 
 ```assembly
 _ARM_PER_CPU_VALUE_GET (r0, lr, intNestingLevel)
@@ -735,19 +738,19 @@ BGT	intExit_RTI
 
 ### 5.3 判断中断发生时的处理器模式
 
-从栈中取出IRQ模式下的栈指针，再从该栈取出进入中断时保存的SPSR寄存器的值。
+从栈中取出 IRQ 模式下的栈指针，再从该栈取出进入中断时保存的 SPSR 寄存器的值。
 
-取SPSR的后4位，即M[3:0]（M[4]恒为1，因此忽略了），判断中断发生时处理器所处的模式；如果是SVC或USR模式跳转到cont_intExit执行，否则跳转到intExit_RTI，请参考[5.6](# 5.6 退出流程intExit_RTI)章节。
+取 SPSR 的后 4 位，即 M[3:0]（M[4]恒为 1，因此忽略了），判断中断发生时处理器所处的模式；如果是 SVC 或 USR 模式跳转到 cont_intExit 执行，否则跳转到 intExit_RTI，请参考[5.6](# 5.6 退出流程 intExit_RTI)章节。
 
 ```assembly
     LDR lr, [sp, #4]                    /* get irq_sp */
     LDR lr, [lr]                        /* get irq_SPSR */
-        
+
     AND lr, lr, #MASK_SUBMODE           /* check mode bits */
-        
+
     TEQ lr, #MODE_SVC32 & MASK_SUBMODE  /* if !SVC(3), check for USR */
     BEQ cont_intExit
-        
+
     TEQ lr, #MODE_USER32 & MASK_SUBMODE /* if USR (0), cont_intExit */
     BNE intExit_RTI                     /* if not SVC or USR, RTI */
 
@@ -756,7 +759,7 @@ cont_intExit:
 
 ### 5.4 判断是否持有内核锁
 
-通过宏_ARM_KERNEL_LOCK_OWNER_AND_INDEX_GET获取内核锁全局变量kernelStateLock.cpuIndex，以及当前处理器核的索引号。从而判断内核锁是否由当前处理器核持有，如果是当前核持有则转跳到intExit_RTI执行中断退出。
+通过宏\_ARM_KERNEL_LOCK_OWNER_AND_INDEX_GET 获取内核锁全局变量 kernelStateLock.cpuIndex，以及当前处理器核的索引号。从而判断内核锁是否由当前处理器核持有，如果是当前核持有则转跳到 intExit_RTI 执行中断退出。
 
 ```assembly
 /* local interrupts are locked */
@@ -771,17 +774,17 @@ CMP r0, r1		/* myself kernel lock owner? */
 BEQ intExit_RTI	/* if yes, just return */
 ```
 
-### 5.5 判断是否需要调度和执行workQ
+### 5.5 判断是否需要调度和执行 workQ
 
-获取cpu_taskIdCurrent（当前任务ID），保存在r0中，后续如果需要跳转到saveIntContext时会使用。
+获取 cpu_taskIdCurrent（当前任务 ID），保存在 r0 中，后续如果需要跳转到 saveIntContext 时会使用。
 
-获取cpu_reschedMode的值，如果值不为0（即WIND_NO_RESCHEDULE）说明需要进行调度，则跳转到saveIntContext处保存保存中断上下文并进行调度，请参考[5.7](# 5.7 saveIntContext)章节。
+获取 cpu_reschedMode 的值，如果值不为 0（即 WIND_NO_RESCHEDULE）说明需要进行调度，则跳转到 saveIntContext 处保存保存中断上下文并进行调度，请参考[5.7](# 5.7 saveIntContext)章节。
 
-如果无需调度，则判断cpu_workQIsEmpty的值是否为0，不为0说明workQ为空，跳转到intExit_RTI执行中断退出流程，否则就使能中断，调用kernelLockTake获取内核锁，再调用workQDoWork执行workQ中的所有work。
+如果无需调度，则判断 cpu_workQIsEmpty 的值是否为 0，不为 0 说明 workQ 为空，跳转到 intExit_RTI 执行中断退出流程，否则就使能中断，调用 kernelLockTake 获取内核锁，再调用 workQDoWork 执行 workQ 中的所有 work。
 
 ```assembly
     _ARM_PER_CPU_VALUE_GET(r0, lr, taskIdCurrent)    /* 跳转到saveIntContext执行才会使用r0 */
-    
+
     _ARM_PER_CPU_VALUE_GET(r1, lr, reschedMode)
     TEQ r1, #0
     BNE saveIntContext
@@ -797,7 +800,7 @@ BEQ intExit_RTI	/* if yes, just return */
     MRS r0, cpsr
     BIC r0, r0, #I_BIT
     MSR cpsr, r0
-    
+
     /* take the kernel lock */
 
     BL FUNC(kernelLockTake)
@@ -807,15 +810,15 @@ emptyWorkQueue:
     BL FUNC(workQDoWork)
 ```
 
-执行完workQDoWork后再次关中断，检查cpu_workQIsEmpty的值，如果workQ中又存在work则跳回emptyWorkQueue处再次执行；workQ为空则释放内核锁，检查cpu_reschedMode，无需调度则跳转到intExit_RTI，否则跳转saveIntContext。
+执行完 workQDoWork 后再次关中断，检查 cpu_workQIsEmpty 的值，如果 workQ 中又存在 work 则跳回 emptyWorkQueue 处再次执行；workQ 为空则释放内核锁，检查 cpu_reschedMode，无需调度则跳转到 intExit_RTI，否则跳转 saveIntContext。
 
 ```assembly
 /* re-lock local interrupts before emptying workQ */
 
 MRS r0, cpsr
-    
+
 ORR r0, r0, #I_BIT
-    
+
 MSR cpsr, r0
 
 _ARM_PER_CPU_VALUE_GET(r0, lr, workQIsEmpty)
@@ -841,9 +844,9 @@ _ARM_PER_CPU_VALUE_GET(r0, lr, taskIdCurrent)
 B saveIntContext
 ```
 
-### 5.6 退出流程intExit_RTI
+### 5.6 退出流程 intExit_RTI
 
-获取cpu_intCnt，cpu_intNestingLevel的地址，分别减1后写回。
+获取 cpu_intCnt，cpu_intNestingLevel 的地址，分别减 1 后写回。
 
 ```assembly
 _ARM_PER_CPU_ADRS_GET (r0, lr, intCnt)
@@ -858,9 +861,9 @@ SUB	lr, lr, #1
 STR	lr, [r1]
 ```
 
-从系统中断栈中恢复SVC模式的上下文，R1为SP_svc，R2为SP_irq，R12、LR为SVC模式的原始值。
+从系统中断栈中恢复 SVC 模式的上下文，R1 为 SP_svc，R2 为 SP_irq，R12、LR 为 SVC 模式的原始值。
 
-将R1赋值给SP_svc，完成SVC模式栈的恢复；修改CPSR寄存器，在关中断的情况下返回IRQ模式。
+将 R1 赋值给 SP_svc，完成 SVC 模式栈的恢复；修改 CPSR 寄存器，在关中断的情况下返回 IRQ 模式。
 
 ```assembly
 /*
@@ -890,24 +893,24 @@ ORR	r0, r0, #(MODE_IRQ32 | I_BIT)
 MSR	cpsr, r0
 ```
 
-在IRQ状态下，将SPSR的值从SP_irq中出栈，通过宏_ARM_SPSR_SET写入SPSR寄存器。
+在 IRQ 状态下，将 SPSR 的值从 SP_irq 中出栈，通过宏\_ARM_SPSR_SET 写入 SPSR 寄存器。
 
-从SP_irq中将保存的中断上下文全部出栈，恢复到被中断的状态继续运行，至此完成全部的中断处理。此处的汇编语法需要注意，当批量Load指令的寄存器列中有PC寄存器时，==^==符号表示将SPSR寄存器的内容恢复到CPSR寄存器中；寄存器列表中没有PC时，^表示在SVC模式下访问USR模式的寄存器。
+从 SP_irq 中将保存的中断上下文全部出栈，恢复到被中断的状态继续运行，至此完成全部的中断处理。此处的汇编语法需要注意，当批量 Load 指令的寄存器列中有 PC 寄存器时，==^==符号表示将 SPSR 寄存器的内容恢复到 CPSR 寄存器中；寄存器列表中没有 PC 时，^表示在 SVC 模式下访问 USR 模式的寄存器。
 
 ```assembly
 LDMFD	sp!, {r0}  /* restore SPSR */
 
 _ARM_SPSR_SET(r0)
-	
+
 /* pull r0-r4, and PC from IRQ/FIQ stack and return */
 LDMFD	sp!, {r0-r4, pc}^	/* restore regs and return from intr */
 ```
 
-### 5.7 调度流程saveIntContext
+### 5.7 调度流程 saveIntContext
 
-进入此分支说明cpu_reschedMode被置位非0的值，即需要进行任务调度，此时R0寄存器的值为当前任务ID（cpu_taskIdCurrent），SP_svc为系统中断栈。
+进入此分支说明 cpu_reschedMode 被置位非 0 的值，即需要进行任务调度，此时 R0 寄存器的值为当前任务 ID（cpu_taskIdCurrent），SP_svc 为系统中断栈。
 
-将在[3.4](# 3.4 保存SVC模式上下文到系统中断栈)章节保存在系统中断栈中的内容出栈，并切换回SVC模式原始的栈。
+将在[3.4](# 3.4 保存 SVC 模式上下文到系统中断栈)章节保存在系统中断栈中的内容出栈，并切换回 SVC 模式原始的栈。
 
 ```assembly
 LDMFD	sp!, {r1-r2, r12, lr}
@@ -917,7 +920,7 @@ LDMFD	sp!, {r1-r2, r12, lr}
  * r1  = svc_sp (original)
  * r2  = irq_sp/fiq_sp
  * r12 = svc_r12 (original)      * lr  = svc_lr (original)
-  
+
  * SVC-mode interruptStack now flattened
  * Switch SVC-mode stack back to what it was when the IRQ/FIQ occurred
  */
@@ -925,9 +928,9 @@ LDMFD	sp!, {r1-r2, r12, lr}
 MOV	sp, r1	/* restore original svc_sp */
 ```
 
-将&(cpu_taskIdCurrent->regs.r[5])赋值给R1；从SP_irq中获取SPSR的值，根据M[3:0]判断中断发生时是否是USR模式，如果不是则跳转到skip_usr处。
+将&(cpu_taskIdCurrent->regs.r[5])赋值给 R1；从 SP_irq 中获取 SPSR 的值，根据 M[3:0]判断中断发生时是否是 USR 模式，如果不是则跳转到 skip_usr 处。
 
-cpu_taskIdCurrent->regs的类型为REG_SET，定义如下所示：
+cpu_taskIdCurrent->regs 的类型为 REG_SET，定义如下所示：
 
 ```c
 typedef struct			/* REG_SET - ARM register set */
@@ -939,11 +942,11 @@ typedef struct			/* REG_SET - ARM register set */
 } REG_SET;
 ```
 
-无论是USR模式还是SVC模式，都会将==R5-R12，SP和LR==寄存器保存在cpu_taskIdCurrent->regs中，差别是USR模式需要使用^符号保存USR模式下的寄存器。
+无论是 USR 模式还是 SVC 模式，都会将==R5-R12，SP 和 LR==寄存器保存在 cpu_taskIdCurrent->regs 中，差别是 USR 模式需要使用^符号保存 USR 模式下的寄存器。
 
 ```assembly
     LDR r3, [r2]                /* get task's CPSR from IRQ/FIQ stack */
-	    
+
     ADD r1, r0, #WIND_TCB_R5            /* r1 -> regs.r[5] */
     AND r3, r3, #MASK_SUBMODE           /* EQ => USR mode */
     TEQ r3, #MODE_USER32 & MASK_SUBMODE /* USR (0) */
@@ -955,9 +958,9 @@ skip_usr:
     STMIA r1, {r5-r12, sp, lr} /* store r5-r12, svc_[sp,lr] */
 ```
 
-从SP_irq中取出==CPSR，R0-R4，PC==，放入R4-R10中，再分别保存到cpu_taskIdCurrent->regs。
+从 SP_irq 中取出==CPSR，R0-R4，PC==，放入 R4-R10 中，再分别保存到 cpu_taskIdCurrent->regs。
 
-读取TTBR0寄存器，获取页表基地址，保存到cpu_taskIdCurrent->regs.ttbase，至此完成了任务所有上下文的保存工作。
+读取 TTBR0 寄存器，获取页表基地址，保存到 cpu_taskIdCurrent->regs.ttbase，至此完成了任务所有上下文的保存工作。
 
 ```assembly
 skip_svc:
@@ -972,9 +975,9 @@ skip_svc:
     STR r1, [r0, #WIND_TCB_TTBASE] /* write to TCB */
 ```
 
-由于调度器使用的是Idel任务的异常栈，因此将R0改为Idle任务ID（cpu_idleTaskId）。
+由于调度器使用的是 Idel 任务的异常栈，因此将 R0 改为 Idle 任务 ID（cpu_idleTaskId）。
 
-获取cpu_idleTaskId->excCnt的值，为0说明需要把栈切换到Idle任务的异常栈（cpu_idleTaskId->pExcStackBase），切换后将ecxCnt加1并写回保存；为1说明已经在使用该栈，无需再进行切换。
+获取 cpu_idleTaskId->excCnt 的值，为 0 说明需要把栈切换到 Idle 任务的异常栈（cpu_idleTaskId->pExcStackBase），切换后将 ecxCnt 加 1 并写回保存；为 1 说明已经在使用该栈，无需再进行切换。
 
 ```assembly
 /*
@@ -995,7 +998,7 @@ ADD r3, r3, #1                        /* increment excCnt */
 STR r3, [r0, #WIND_TCB_EXC_CNT]       /* and store in TCB */
 ```
 
-修改CPSR寄存器，切换到IRQ模式，将SP_irq加上4*7，把SP_irq恢复到进入中断前的状态（IRQ栈中的寄存器都已保存到cpu_taskIdCurrent->regs，可以丢弃[3.1](# 3.1 保存IRQ模式上下文，切换到SVC)章节中保存的7个寄存器），再切换回SVC模式。
+修改 CPSR 寄存器，切换到 IRQ 模式，将 SP_irq 加上 4\*7，把 SP_irq 恢复到进入中断前的状态（IRQ 栈中的寄存器都已保存到 cpu_taskIdCurrent->regs，可以丢弃[3.1](# 3.1 保存 IRQ 模式上下文，切换到 SVC)章节中保存的 7 个寄存器），再切换回 SVC 模式。
 
 注意切换模式的过程中都是关中断的。
 
@@ -1018,15 +1021,15 @@ MSR cpsr, r1   /* r1 = CPSR */
 MRS r1, cpsr
 BIC r1, r1, #I_BIT
 MSR cpsr, r1
-    
+
 BL FUNC(kernelLockTake)
-    
+
 MRS r1, cpsr
 ORR r1, r1, #I_BIT
 MSR cpsr, r1	/* r1 = CPSR */
 ```
 
-将cpu_intCnt和cpu_intNestingLevel清零，开中断，调用reschedule进行任务调度，该接口不会返回。
+将 cpu_intCnt 和 cpu_intNestingLevel 清零，开中断，调用 reschedule 进行任务调度，该接口不会返回。
 
 ```assembly
 _ARM_PER_CPU_ADRS_GET (r2, lr, intCnt)
@@ -1044,11 +1047,11 @@ B FUNC(reschedule)
 
 ### 5.8 小结
 
-intExit除了体系结构相关的操作外，与系统内核结合较为紧密，程序会通过判断中断嵌套、是否需要调度，workQ队列状态等进入不同的分支执行。
+intExit 除了体系结构相关的操作外，与系统内核结合较为紧密，程序会通过判断中断嵌套、是否需要调度，workQ 队列状态等进入不同的分支执行。
 
-根据代码分析可以发现，中断发生在无需调度，workQ队列为空的情况下，中断处理全程处于关中断状态，不会产生中断嵌套。只有在执行workQDoWork和reschedule时才会使能中断，可能会发生中断嵌套。因此intEnt中并未保存全部上下文，而是在intExit中确认需要进行调度时才将所有上下文保存在对应任务的结构体cpu_taskIdCurrent->regs成员中。
+根据代码分析可以发现，中断发生在无需调度，workQ 队列为空的情况下，中断处理全程处于关中断状态，不会产生中断嵌套。只有在执行 workQDoWork 和 reschedule 时才会使能中断，可能会发生中断嵌套。因此 intEnt 中并未保存全部上下文，而是在 intExit 中确认需要进行调度时才将所有上下文保存在对应任务的结构体 cpu_taskIdCurrent->regs 成员中。
 
-SMP模式下intExit代码的流程图如下所示：
+SMP 模式下 intExit 代码的流程图如下所示：
 
 ```c
 Current SMP version:
@@ -1101,6 +1104,6 @@ Flow to exit interrupt service routine:
                  intExit_RTI    -------->-----
 ```
 
-------
+---
 
-[^1]: #define SYS_HW_INIT_0()         (sysHwInit0())
+[^1]: #define SYS_HW_INIT_0() (sysHwInit0())

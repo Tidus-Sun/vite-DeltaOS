@@ -58,6 +58,16 @@ export default defineConfig({
               //text: '公共知识',
               items: [
                 {
+                  text: '计算机体系结构',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: '磁盘分区表结构分析',
+                      link: '/公共知识/计算机体系结构/磁盘分区表结构分析/磁盘分区表结构分析.md',
+                    },
+                  ],
+                },
+                {
                   text: '网络',
                   collapsed: false,
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
@@ -71,6 +81,20 @@ export default defineConfig({
                   text: '文件系统',
                   collapsed: false,
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
+                },
+                {
+                  text: 'vxWorks',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: 'vxWorks的ARMv7中断初始化及处理流程分析',
+                      link: '/公共知识/vxWorks/vxWorks的ARMv7中断初始化及处理流程分析.md',
+                    },
+                    {
+                      text: 'vxWorks的ARMv7异常处理流程分析',
+                      link: '/公共知识/vxWorks/vxWorks的ARMv7异常处理流程分析.md',
+                    },
+                  ],
                 },
               ],
             },
@@ -110,6 +134,16 @@ export default defineConfig({
               //text: '公共知识',
               items: [
                 {
+                  text: '计算机体系结构',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: '磁盘分区表结构分析',
+                      link: '/公共知识/计算机体系结构/磁盘分区表结构分析/磁盘分区表结构分析.md',
+                    },
+                  ],
+                },
+                {
                   text: '网络',
                   collapsed: false,
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
@@ -123,6 +157,20 @@ export default defineConfig({
                   text: '文件系统',
                   collapsed: false,
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
+                },
+                {
+                  text: 'vxWorks',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: 'vxWorks的ARMv7中断初始化及处理流程分析',
+                      link: '/公共知识/vxWorks/vxWorks的ARMv7中断初始化及处理流程分析.md',
+                    },
+                    {
+                      text: 'vxWorks的ARMv7异常处理流程分析',
+                      link: '/公共知识/vxWorks/vxWorks的ARMv7异常处理流程分析.md',
+                    },
+                  ],
                 },
               ],
             },

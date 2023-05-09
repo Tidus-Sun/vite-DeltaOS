@@ -9,6 +9,10 @@ export default defineConfig({
   markdown: {
     theme: 'material-theme-darker',
     lineNumbers: true,
+    config: (md) => {
+      // use more markdown-it plugins!
+      md.use(require('markdown-it-katex'));
+    },
   },
 
   themeConfig: {

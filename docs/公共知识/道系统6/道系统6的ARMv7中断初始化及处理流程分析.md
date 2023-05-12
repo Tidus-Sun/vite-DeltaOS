@@ -1,12 +1,13 @@
-<div align='center' ><font size=6>vxWorks的ARMv7中断初始化及处理流程分析</font></div>
+<div align='center' ><font size=6>道系统6的ARMv7中断初始化及处理流程分析</font></div>
 
 <br>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/Platform-ARMv7 vxWorks-orange" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Platform-ARMv7 DeltaOS-orange" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Version-1.0-red" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Date-2020.06.08-ff69b4" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Write By-Tidus-blue" style="display: inline-block;">
+
 
 </div>
 

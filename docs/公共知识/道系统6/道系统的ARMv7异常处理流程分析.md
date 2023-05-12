@@ -1,4 +1,4 @@
-<div align='center' ><font size=6>vxWorks的ARMv7异常处理流程分析</font></div>
+<div align='center' ><font size=6>道系统的ARMv7异常处理流程分析</font></div>
 
 <br>
 
@@ -141,7 +141,7 @@ Hyp 向量表的 0x14 是一下异常的入口：
 
 ## 2.初始化
 
-vxWorks 运行在处理器的 Non-secure PL1&0 状态，只需考虑一张中断异常向量表的实现。具体的中断异常初始化代码已经在《vxWorks 的 ARMv7 中断初始化及处理流程分析》中进行了详细分析，请参考该文档，此处不再赘述。
+道系统运行在处理器的 Non-secure PL1&0 状态，只需考虑一张中断异常向量表的实现。具体的中断异常初始化代码已经在《道系统的ARMv7中断初始化及处理流程分析》中进行了详细分析，请参考该文档，此处不再赘述。
 
 ## 3.Data Abort 异常处理程序 excEnterDataAbort
 
@@ -1123,7 +1123,7 @@ LDMIB r2, {r0-r3, pc}^
 
 > 注 1：`cpu_taskIdCurrent->pExcStackStart 是真正的异常栈基址`，任务创建时会因为各种情况调用 taskStackAllot 接口从任务异常栈基址上预留指定空间，并用 cpu_taskIdCurrent->pExcStackBase 记录修改后异常栈基址。
 
-> 注 2：vxWorks 创建任务时运行栈和异常栈空间时连续的，异常栈在更高的地址。异常栈栈顶（pExcStackEnd）比运行栈基址高 16 字节。（尚未对任务创建代码进行详细分析，目前结论通过系统运行时查看任务信息得到）
+> 注 2：道系统创建任务时运行栈和异常栈空间时连续的，异常栈在更高的地址。异常栈栈顶（pExcStackEnd）比运行栈基址高 16 字节。（尚未对任务创建代码进行详细分析，目前结论通过系统运行时查看任务信息得到）
 
 ```c
  /* 任务的运行栈与异常栈示意图 */

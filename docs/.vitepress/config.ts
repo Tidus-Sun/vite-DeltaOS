@@ -88,16 +88,16 @@ export default defineConfig({
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
                 },
                 {
-                  text: 'vxWorks',
+                  text: '道系统6',
                   collapsed: false,
                   items: [
                     {
-                      text: 'vxWorks的ARMv7中断初始化及处理流程分析',
-                      link: '/公共知识/vxWorks/vxWorks的ARMv7中断初始化及处理流程分析.md',
+                      text: '道系统的ARMv7中断初始化及处理流程分析',
+                      link: '/公共知识/道系统6/道系统的ARMv7中断初始化及处理流程分析.md',
                     },
                     {
-                      text: 'vxWorks的ARMv7异常处理流程分析',
-                      link: '/公共知识/vxWorks/vxWorks的ARMv7异常处理流程分析.md',
+                      text: '道系统的ARMv7异常处理流程分析',
+                      link: '/公共知识/道系统6/道系统的ARMv7异常处理流程分析.md',
                     },
                   ],
                 },
@@ -168,16 +168,16 @@ export default defineConfig({
                   //items: [{ text: '网络', link: '/公共知识/网络/' }],
                 },
                 {
-                  text: 'vxWorks',
+                  text: '道系统6',
                   collapsed: false,
                   items: [
                     {
-                      text: 'vxWorks的ARMv7中断初始化及处理流程分析',
-                      link: '/公共知识/vxWorks/vxWorks的ARMv7中断初始化及处理流程分析.md',
+                      text: '道系统的ARMv7中断初始化及处理流程分析',
+                      link: '/公共知识/道系统6/道系统的ARMv7中断初始化及处理流程分析.md',
                     },
                     {
-                      text: 'vxWorks的ARMv7异常处理流程分析',
-                      link: '/公共知识/vxWorks/vxWorks的ARMv7异常处理流程分析.md',
+                      text: '道系统的ARMv7异常处理流程分析',
+                      link: '/公共知识/道系统6/道系统的ARMv7异常处理流程分析.md',
                     },
                   ],
                 },

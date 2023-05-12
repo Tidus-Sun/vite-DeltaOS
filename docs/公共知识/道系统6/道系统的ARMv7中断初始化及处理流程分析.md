@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/Version-1.0-red" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Date-2020.06.08-ff69b4" style="display: inline-block;">&nbsp;
     <img src="https://img.shields.io/badge/Write By-Tidus-blue" style="display: inline-block;">
-    
+
 </div>
 
 ---
@@ -16,7 +16,7 @@
 
 ## 1.预备知识
 
-以飞腾处理器为例，FT1500 是 ARMv8 架构，但在 vxWorks 中切换到 Non-Secoure AArch32 模式运行，因此其中断异常模型与 ARMv7 架构相同。ARMv7 的中断向量表定义如下（该表省略了 Hyp 和 Monitor 模式）：
+以飞腾处理器为例，FT1500 是 ARMv8 架构，但在道系统中切换到 Non-Secoure AArch32 模式运行，因此其中断异常模型与 ARMv7 架构相同。ARMv7 的中断向量表定义如下（该表省略了 Hyp 和 Monitor 模式）：
 
 | 偏移 |        Secure         |      Non-secure       |
 | :--: | :-------------------: | :-------------------: |
@@ -29,7 +29,7 @@
 | 0x18 |          IRQ          |          IRQ          |
 | 0x1C |          FIQ          |          FIQ          |
 
-ARMv7 最多可有四张中断异常向量表，分别在 Non-secure PL1&0、Non-secure PL2、Secure PL1 和 Secure Monitor。vxWorks 运行在 Non-secure PL1&0，因此只需考虑一张中断异常向量表的实现。
+ARMv7 最多可有四张中断异常向量表，分别在 Non-secure PL1&0、Non-secure PL2、Secure PL1 和 Secure Monitor。道系统运行在 Non-secure PL1&0，因此只需考虑一张中断异常向量表的实现。
 
 在 Non-secure 中，SCTLR 寄存器的 V 位决定了向量表的地址，为 0 时向量表基址保存在 VBAR 寄存器中，为 1 时在 0xFFFF0000 处，注意向量表需以 32 字节对齐。
 
@@ -214,7 +214,7 @@ armInitExceptionModes 在 coreExcALib.s 文件中实现，该段汇编会获取 
 
 ###### 2.2.2.1.1 获取处理器核的索引号
 
-先通过宏\_ARM_CPU_INDEX_GET 获取处理器核的索引号，注意 vxWorks 原始代码只获取 MPIDR 寄存器的低 4 位，而 16 核 FT1500 的 ID 由 Aff1 和 Aff0 组成，因此需要对该宏进行改写：
+先通过宏\_ARM_CPU_INDEX_GET 获取处理器核的索引号，注意道系统原始代码只获取 MPIDR 寄存器的低 4 位，而 16 核 FT1500 的 ID 由 Aff1 和 Aff0 组成，因此需要对该宏进行改写：
 
 ```c
 #define _ARM_CPU_INDEX_GET(r)              \
@@ -236,7 +236,7 @@ armInitExceptionModes 在 coreExcALib.s 文件中实现，该段汇编会获取 
 #define _ARM_PER_CPU_CONCAT_CPU(label, cpu) L$_##label##_##cpu
 ```
 
-每个核都有 4 个异常模式栈，vxWorks 默认只定义了 4 个核的异常模式栈，如果要支持大于 4 个核的处理器，要增加其他核异常栈的定义。
+每个核都有 4 个异常模式栈，道系统默认只定义了 4 个核的异常模式栈，如果要支持大于 4 个核的处理器，要增加其他核异常栈的定义。
 
 ```c
 L$_undefSaveArea_0:   .long   VAR(undefSaveArea_0)
@@ -370,7 +370,7 @@ L$_vxKernelVars:      .long   VAR(deltaKernelVars)
 
 ##### 2.2.2.3 保存栈空间基址到全局变量
 
-通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。`注意，vxWorks 的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。`
+通过`str r0, [r1]`指令将异常模式的栈空间基址保存在刚刚获取的结构体成员的中。`注意，道系统的汇编异常处理程序将栈以满增栈的形式使用，因此此处保存的是栈的低地址而非高地址。`
 
 至此，Undefined，Abort，Swi(SVC)和 IRQ 模式的栈基址都保存在了全局变量 deltaKernelVars 中。
 
@@ -464,7 +464,7 @@ for (i = 0; i < NUM_EXC_VECS; ++i)
 }
 ```
 
-vxWorks 设计在内存的`向量表基址+excPtrTableOffset`处依次存放中断异常处理程序的地址，excPtrTableOffset 为 0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低 12 位为基于 PC 的偏移地址，需要计算后形成最终的机器码写入向量表。
+道系统设计在内存的`向量表基址+excPtrTableOffset`处依次存放中断异常处理程序的地址，excPtrTableOffset 为 0x100。`LDR PC,[PC,#offset]`指令的目的就是转跳到对应的处理程序中。该机器码低 12 位为基于 PC 的偏移地址，需要计算后形成最终的机器码写入向量表。
 
 偏移的计算方法是`- 0x8 + 0x100 + - 0x4`。\- 0x8 是因为 ARM 架构中 PC 指向当前执行指令后的第二条指令，即 PC 等于当前指令地址+8；加偏移 0x100 后减 0x4 是因为 Non-Secoure 状态下没有使用 Reset 中断，不需要对应的中断处理程序，Undefined Instruction 中断处理程序排在第一个，因此 Undefined Instruction 中断入口与其处理程序的偏移是 0x100 - 0x4。
 
@@ -675,7 +675,7 @@ do
 } while (vxbArmGicLvlVecChk (pVxbArmGicDrvCtrl->pInst, &level, &vector, &srcCpuId) != ERROR);
 ```
 
-真实中断处理的获取方法是通过中断号索引保存在 pVxbArmGicDrvCtrl->isrHandle->pTop 中的两级中断表，从而获取驱动安装的真实的中断处理程序。关于 vxWorks 的中断表结构会在 GIC 驱动文档中详细分析。
+真实中断处理的获取方法是通过中断号索引保存在 pVxbArmGicDrvCtrl->isrHandle->pTop 中的两级中断表，从而获取驱动安装的真实的中断处理程序。关于道系统的中断表结构会在 GIC 驱动文档中详细分析。
 
 ```c
 #define VXB_INTCTLR_ISR_CALL(ent, inpPin)                          \

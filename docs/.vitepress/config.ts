@@ -101,6 +101,16 @@ export default defineConfig({
                     },
                   ],
                 },
+                {
+                  text: '其他',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: 'Markdown基础语法',
+                      link: '/公共知识/其他/Markdown基础语法/Markdown基础语法.md',
+                    },
+                  ],
+                },
               ],
             },
             // ...
@@ -178,6 +188,16 @@ export default defineConfig({
                     {
                       text: '道系统6的ARMv7异常处理流程分析',
                       link: '/公共知识/道系统6/道系统6的ARMv7异常处理流程分析.md',
+                    },
+                  ],
+                },
+                {
+                  text: '其他',
+                  collapsed: false,
+                  items: [
+                    {
+                      text: 'Markdown基础语法',
+                      link: '/公共知识/其他/Markdown基础语法/Markdown基础语法.md',
                     },
                   ],
                 },

@@ -217,8 +217,6 @@ $$
 
 $\lim_{x\to\infty}\exp(-x) = 0$
 
-$\int_1^\infty$
-
 $$
 \mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
 \mathbf{i} & \mathbf{j} & \mathbf{k} \\

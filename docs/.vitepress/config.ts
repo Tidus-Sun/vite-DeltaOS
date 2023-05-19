@@ -20,7 +20,7 @@ export default defineConfig({
     //siteTitle: '1111111111111111111111',
     logo: { light: '/pic/libuv-color.svg', dark: '/pic/deno-color.svg' },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/Tidus-Sun/vite-DeltaOS' },
+      { icon: 'github', link: 'https://github.com/' },
     ],
     footer: {
       message: 'Released under the MIT License.',

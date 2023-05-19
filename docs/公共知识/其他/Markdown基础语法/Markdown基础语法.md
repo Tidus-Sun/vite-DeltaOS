@@ -81,7 +81,7 @@
 ## 5.代码
 
 ````markdown
-代码块
+代码块使用三个`
 
 ```go
 package main
@@ -92,12 +92,12 @@ func main() {
 	fmt.Printf("Hello Markdown!\n")
 }
 ```
+
+内嵌代码，无语法高亮，使用一个`
+
+`printf("Hello World!\n")`
 ````
 
-内嵌代码，无语法高亮
-这是 C 语言`printf("Hello World!\n")`
-
-````
 ```go
 package main
 
@@ -106,7 +106,7 @@ import "fmt"
 func main() {
     fmt.Printf("Hello Markdown!\n")
 }
-````
+```
 
 这是 C 语言`printf("Hello World!\n")`
 

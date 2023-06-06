@@ -18,7 +18,7 @@ export default defineConfig({
 
   themeConfig: {
     //siteTitle: '1111111111111111111111',
-    logo: { light: '/pic/libuv-color.svg', dark: '/pic/deno-color.svg' },
+    logo: { light: '/pic/CrimsonPig_2.png', dark: '/pic/CrimsonPig_1.png' },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/' },
     ],

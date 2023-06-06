@@ -423,14 +423,14 @@ QEMU Virt BSP 自带了长度为 256 的 Hash Key，并提供了 Hash Key 生成
 
 ### 🪳 已知问题
 
-启动 QEMU 虚拟机时如果未使能 KVM，需要在系统内核代码或 Shell 中调用*qemuVirtTrigger (78)*，使能 KVM 时不存在该问题：
+启动 QEMU 虚拟机时如果未使能 KVM，需要在系统内核代码或 Shell 中调用*qemuVirtTriggerInt (78)*，使能 KVM 时不存在该问题：
 
 ```c
 #include <qemuVirt.h>
 
 void usrAppInit (void)
 {
-    qemuVirtTrigger (78);
+    qemuVirtTriggerInt (78);
 }
 ```
 

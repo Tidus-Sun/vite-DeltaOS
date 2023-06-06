@@ -6,8 +6,8 @@ hero:
   text: 欢迎访问科银京成         道系统6维基小百科💯
   tagline: 来都来了，不学习些东西怎么能行呢？
   image:
-    light: '/pic/CrimsonPig_2.png'
-    dark: '/pic/CrimsonPig_1.png'
+    light: '/pic/yuanshen_4.png'
+    dark: '/pic/yuanshen_3.png'
     alt: 试试Drak模式？
   actions:
     - theme: brand

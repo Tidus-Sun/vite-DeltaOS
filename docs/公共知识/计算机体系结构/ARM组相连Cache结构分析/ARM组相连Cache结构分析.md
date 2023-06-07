@@ -1,10 +1,11 @@
 <div align='center' ><font size=6>ARM组相连Cache结构</font></div>
+<br>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/Platform-ARM-008DB6?style=flat&logo=Arch Linux">
-    <img src="https://img.shields.io/badge/Version-v1.0-99CC33?style=flat&logo=Git">
-    <img src="https://img.shields.io/badge/Date-2023.06.07-FF6384?style=flat&logo=Crayon">
-    <img src="https://shields.io/badge/WriteBy-Tidus-31C48D?style=flat&logo=Ghostery">
+    <img src="https://img.shields.io/badge/Platform-ARM-008DB6?style=flat&logo=Arch Linux" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Version-v1.0-99CC33?style=flat&logo=Git" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Date-2023.06.07-FF6384?style=flat&logo=Crayon" style="display: inline-block;">&nbsp;
+    <img src="https://shields.io/badge/WriteBy-Tidus-31C48D?style=flat&logo=Ghostery" style="display: inline-block;">
 </div>
 
 Cache的结构有全关联（full-associative），直接映射（direct-mapping）和组关联（set-associative），当前处理器几乎都使用组相连的Cache结构。

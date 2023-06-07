@@ -70,6 +70,10 @@ export default defineConfig({
                       text: '磁盘分区表结构分析',
                       link: '/公共知识/计算机体系结构/磁盘分区表结构分析/磁盘分区表结构分析.md',
                     },
+                    {
+                      text: 'ARM组相连Cache结构分析',
+                      link: '/公共知识/计算机体系结构/ARM组相连Cache结构分析/ARM组相连Cache结构分析.md',
+                    },
                   ],
                 },
                 {
@@ -163,6 +167,10 @@ export default defineConfig({
                     {
                       text: '磁盘分区表结构分析',
                       link: '/公共知识/计算机体系结构/磁盘分区表结构分析/磁盘分区表结构分析.md',
+                    },
+                    {
+                      text: 'ARM组相连Cache结构分析',
+                      link: '/公共知识/计算机体系结构/ARM组相连Cache结构分析/ARM组相连Cache结构分析.md',
                     },
                   ],
                 },

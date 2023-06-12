@@ -16,25 +16,25 @@ layout: doc
 
 [[toc]]
 
-## 📡1.Linux 网络配置
+## 📡1.Linux网络配置
 
-### 🪐TAP+NAT 模式
+### 🪐TAP+NAT模式
 
-在 Linux 中创建 TAP 设备并开启 NAT，可以实现 QEMU 虚拟机与 Linux 主机的网络互通以及虚拟机访问互联网。配置的主要步骤如下：
+在 Linux 中创建TAP设备并开启NAT，可以实现QEMU虚拟机与Linux主机的网络互通以及虚拟机访问互联网。配置的主要步骤如下：
 
-1. 创建网桥*br0*和 TAP 设备*tap0*
-2. 为*br0*添加 IP 地址*10.0.2.1*
-3. 开启 Linux 系统 IP 转发
+1. 创建网桥*br0*和TAP设备*tap0*
+2. 为*br0*添加IP地址*10.0.2.1*
+3. 开启Linux系统IP转发
 4. 允许网桥*br0*转发的数据包通过防火墙
-5. 开启 NAT 功能
+5. 开启NAT功能
 
-QEMU Virt BSP 中提供了下列命令的可执行脚本文件，名为*config_net_nat.sh*
+QEMU Virt BSP中提供了下列命令的可执行脚本文件，名为*config_net_nat.sh*
 
 > 注意：
 >
-> 1.请根据您网络环境的实际情况修改网桥 IP 地址与网卡名
+> 1.请根据您网络环境的实际情况修改网桥IP地址与网卡名
 >
-> 2.一个 TAP 设备仅供一个 QEMU 虚拟机使用，如需同时启动多个虚拟机，请创建多个 TAP 设备
+> 2.一个TAP设备仅供一个QEMU虚拟机使用，如需同时启动多个虚拟机，请创建多个TAP设备
 
 ```shell
 sudo ip link add name br0 type bridge
@@ -49,15 +49,15 @@ sudo iptables -t filter -A FORWARD -o br0 -j ACCEPT
 sudo iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
 ```
 
-### 🌉TAP+Bridge 模式
+### 🌉TAP+Bridge模式
 
-也可以采用 Bridge 模式进行网络配置，这种方法将 Linux 的网卡与 TAP 设备同时绑定在网桥上，QEMU 虚拟机的 IP 与 Linux 网卡 IP 在同一网段中。具体步骤如下：
+也可以采用Bridge模式进行网络配置，这种方法将Linux的网卡与TAP设备同时绑定在网桥上，QEMU虚拟机的IP与Linux网卡IP在同一网段中。具体步骤如下：
 
-1. 创建网桥*br1*和 TAP 设备*tap1*
+1. 创建网桥*br1*和TAP设备*tap1*
 2. 将物理网卡*ens33*和*tap1*绑定到网桥*br1*上
-3. 将*ens33*的 IP 地址设置在网桥*br1*上
-4. 设置默认路由且使用 br1 作为接口
-5. 开启 Linux 系统 IP 转发
+3. 将*ens33*的IP地址设置在网桥*br1*上
+4. 设置默认路由且使用br1作为接口
+5. 开启Linux系统IP转发
 6. 允许网桥*br1*转发的数据包通过防火墙
 
 > 请根据您网络环境的实际情况修改物理网卡名和所需网络地址
@@ -77,23 +77,23 @@ sudo iptables -t filter -A FORWARD -i br1 -j ACCEPT
 sudo iptables -t filter -A FORWARD -o br1 -j ACCEPT
 ```
 
-### 🤖DHCP 服务
+### 🤖DHCP服务
 
-DeltaOS 可通过 DHCP 服务器自动获取 IP 地址，下列步骤以 ArchLinux 为例配置和开启 DHCP Server，不同的 Linux 发行版实际操作会有一定差别：
+DeltaOS可通过DHCP服务器自动获取IP地址，下列步骤以ArchLinux为例配置和开启DHCP Server，不同的Linux发行版实际操作会有一定差别：
 
-> 安装 DHCP 服务端
+> 安装DHCP服务端
 
 ```shell
 sudo pacman -S dhcp
 ```
 
-> 编辑/etc/dhcpd.conf 文件，
+> 编辑/etc/dhcpd.conf文件，
 
 ```shell
 sudo vim /etc/dhcpd.conf
 ```
 
-> 在 dhcpd.conf 中输入以下内容
+> 在dhcpd.conf中输入以下内容
 
 ```shell
 option domain-name-servers 192.168.213.2;   #DNS服务器地址，可通过/etc/resolv.conf文件获取
@@ -111,13 +111,13 @@ subnet 192.168.213.0 netmask 255.255.255.0 {
 }
 ```
 
-> 开启 DHCP Server
+> 开启DHCP Server
 
 ```shell
 sudo systemctl start dhcpd4.service
 ```
 
-> 设置 DHCP Server 随 Linux 启动
+> 设置DHCP Server随Linux启动
 
 ```shell
 sudo systemctl enable dhcpd4.service
@@ -125,19 +125,19 @@ sudo systemctl enable dhcpd4.service
 
 ## 💾2.QEMU 磁盘镜像配置
 
-当 QEMU 虚拟机内的 DeltaOS 需要存储设备时，可以在 Linux 中创建磁盘镜像文件，作为块设备挂载到 QEMU 虚拟机上。下面介绍两种磁盘镜像文件创建方法，分别是使用*qemu-img*工具创建 qcow2 格式的镜像文件和使用*dd*直接创建镜像文件。
+当QEMU虚拟机内的DeltaOS需要存储设备时，可以在Linux中创建磁盘镜像文件，作为块设备挂载到QEMU虚拟机上。下面介绍两种磁盘镜像文件创建方法，分别是使用*qemu-img*工具创建qcow2格式的镜像文件和使用*dd*直接创建镜像文件。
 
-qcow2 格式支持稀疏存储，具有压缩、快照、回滚、加密等功能，并可通过*qemu-img*工具转换为其他镜像格式，因此强烈推荐使用 qcow2 文件作为 QEMU 虚拟机的磁盘镜像。
+qcow2格式支持稀疏存储，具有压缩、快照、回滚、加密等功能，并可通过*qemu-img*工具转换为其他镜像格式，因此强烈推荐使用qcow2文件作为QEMU虚拟机的磁盘镜像。
 
 ### 💽qemu-img
 
-> 创建 qcow2 镜像
+> 创建qcow2镜像
 
 ```shell
 qemu-img create -f qcow2 disk.qcow2 16G
 ```
 
-> 挂载 qcow2 文件到 nbd 设备
+> 挂载qcow2文件到nbd设备
 
 ```shell
 sudo modprobe nbd max_part=16
@@ -163,7 +163,7 @@ sudo mkfs.fat /dev/nbd0p2
 sudo mount /dev/nbd0p1 disk_p1_dir
 ```
 
-> 卸载及断开 nbd 设备
+> 卸载及断开nbd设备
 
 ```shell
 sudo umount disk_p1_dir
@@ -172,7 +172,7 @@ sudo qemu-nbd -d /dev/nbd0
 
 ### ⛏️dd
 
-也可以使用*dd*命令创建磁盘镜像，以下步骤创建了一个 1GB 的磁盘镜像并进行了分区和格式化：
+也可以使用*dd*命令创建磁盘镜像，以下步骤创建了一个1GB的磁盘镜像并进行了分区和格式化：
 
 ```shell
 #使用seek参数创建稀疏文件
@@ -186,7 +186,7 @@ dd if=/dev/zero of=./disk.img bs=1M seek=1024 count=0
 fdisk disk.img
 ```
 
-> 将镜像文件关联到 loop 设备
+> 将镜像文件关联到loop设备
 
 ```shell
 sudo losetup -Pf disk.img
@@ -215,7 +215,7 @@ sudo losetup -d /dev/loop0
 
 > 注意:
 >
-> 1. QEMU 使用*dd*创建的镜像时，*-drive*参数的 format 应设置为*raw*
+> 1. QEMU使用*dd*创建的镜像时，*-drive*参数的format应设置为*raw*
 >
 > 2. 使用*cp*命令复制稀疏文件时可能会复制文件的全部未压缩大小，请按如下方式进行复制：
 >
@@ -223,7 +223,7 @@ sudo losetup -d /dev/loop0
 
 ### 🥪 标准磁盘镜像
 
-为了便于用户快速完成系统配置与启动，QEMU Virt BSP 中提供了一个已创建好的 qcow2 磁盘镜像文件(_disk.qcow2_)，可以直接挂载使用。该磁盘大小为**16GB**，使用 MBR 分区表，划分为 2 个主分区，每个分区大小为 8GB。分区 1 中存储有*cfg/userDB*用户数据库文件，详细信息请参考[🪪6.用户管理](##🪪6.用户管理)章节。磁盘镜像信息如下:
+为了便于用户快速完成系统配置与启动，QEMU Virt BSP中提供了一个已创建好的qcow2磁盘镜像文件(_disk.qcow2_)，可以直接挂载使用。该磁盘大小为**16GB**，使用MBR分区表，划分为2个主分区，每个分区大小为8GB。分区1中存储有*cfg/userDB*用户数据库文件，详细信息请参考[🪪6.用户管理](## 🪪6.用户管理)章节。磁盘镜像信息如下:
 
 ```shell
 $ qemu-img info disk.qcow2
@@ -241,13 +241,13 @@ Format specific information:
     extended l2: false
 ```
 
-## 🎇3.启动 DeltaOS
+## 🎇3.启动DeltaOS
 
-如果在 ARM64 位架构主机上运行 QEMU 虚拟机，可以通过开启 KVM 实现硬件辅助虚拟化，提高虚拟机性能(注意需要在主机启动固件中开启 SMMUv3)；非 ARM64 位架构主机不可开启 KVM，仅可使用 TCG 加速。
+如果在ARM64位架构主机上运行QEMU虚拟机，可以通过开启KVM实现硬件辅助虚拟化，提高虚拟机性能(注意需要在主机启动固件中开启SMMUv3)；非ARM64位架构主机不可开启KVM，仅可使用TCG加速。
 
-当启动多个虚拟机时，请注意修改命令行中的磁盘镜像文件、monitor 端口号、tap 设备名、MAC 地址等参数。
+当启动多个虚拟机时，请注意修改命令行中的磁盘镜像文件、monitor端口号、tap设备名、MAC地址等参数。
 
-### 🛫 使用 KVM
+### 🛫 使用KVM
 
 ```shell
 qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=host,its=on -cpu host -smp 8 -m 8192 \
@@ -258,7 +258,7 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=host,its=on -cp
 -device virtio-net-device,netdev=tapnet,mac=00:11:22:33:44:55
 ```
 
-### 🐢 不使用 KVM
+### 🐢 不使用KVM
 
 ```shell
 qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=3 -cpu cortex-a72 -smp 8 -m 8192 \
@@ -269,13 +269,13 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=3 -cpu cortex-a
 -device virtio-net-device,netdev=tapnet,mac=00:11:22:33:44:55
 ```
 
-> 注：BSP 中的 dts 文件最多可支持启动 32 核
+> 注：BSP 中的dts文件最多可支持启动32核
 
-## 🛠️4.DeltaOS 网络配置
+## 🛠️4.DeltaOS网络配置
 
 ### 📟DHCP Client
 
-在 DeltaOS 中可通过*ifconfig*命令开启或关闭网卡的 DHCP 功能:
+在DeltaOS中可通过*ifconfig*命令开启或关闭网卡的DHCP功能:
 
 ```shell
 cmd
@@ -287,14 +287,14 @@ ifconfig virtioNet0 -dhcp
 
 ### 🔍 设置 DNS 服务器
 
-通常可通过 DHCP 服务获取 DNS 服务器地址，如果 DHCP 服务端未配置 DNS 信息或需要更换 DNS 服务器地址，可使用以下命令:
+通常可通过DHCP服务获取DNS服务器地址，如果DHCP服务端未配置DNS信息或需要更换DNS服务器地址，可使用以下命令:
 
 ```shell
 cmd
 sysvar set -o ipdnsc.primaryns 192.168.213.2
 ```
 
-设置 DNS 后可通过*ping*命令进行验证：
+设置DNS后可通过*ping*命令进行验证：
 
 ```shell
 $ ping -c 3 www.qq.com
@@ -309,9 +309,9 @@ Reply from 58.49.216.194 bytes=64 ttl=51 seq=2 time=50ms
 rtt min/avg/max = 33/44/50 ms
 ```
 
-### ✒️ 手动设置 IP 地址
+### ✒️ 手动设置IP地址
 
-不使用 DHCP 时，可通过*ifconfig*命令手动设置网卡 IP 地址：
+不使用DHCP时，可通过*ifconfig*命令手动设置网卡IP地址：
 
 ```shell
 cmd
@@ -332,7 +332,7 @@ route add default 10.0.2.1
 
 ## 🚀5.性能优化
 
-在 QEMU 虚拟机内运行 DeltaOS 时，需要在内核镜像的*usrPreKernelAppInit()*函数中调用*qemuVirtCpuOptimize()*，可优化虚拟机运行时的 CPU 占有率，大幅提升性能，代码如下:
+在QEMU虚拟机内运行DeltaOS时，需要在内核镜像的*usrPreKernelAppInit()*函数中调用*qemuVirtCpuOptimize()*，可优化虚拟机运行时的CPU占有率，大幅提升性能，代码如下:
 
 ```c
 #include <qemuVirt.h>
@@ -345,32 +345,32 @@ void usrPreKernelAppInit (void)
 
 ## 🪪6.用户管理
 
-DeltaOS 具备用户认证与管理功能，适用于 Shell、FTP、Telnet、SSH 等服务登录时的身份验证。用户可根据使用需要创建登录账号，账号的密码通过指定长度的 Hash Key 计算后存储在文件中。
+DeltaOS具备用户认证与管理功能，适用于Shell、FTP、Telnet、SSH等服务登录时的身份验证。用户可根据使用需要创建登录账号，账号的密码通过指定长度的Hash Key计算后存储在文件中。
 
-QEMU Virt BSP 自带了长度为 256 的 Hash Key，并提供了 Hash Key 生成工具(_HashKey.exe_)，用户可根据需要生成 256-1024 长度的随机 Hash Key，替换默认值，请注意妥善保管好 Hash Key 文件。
+QEMU Virt BSP自带了长度为256的Hash Key，并提供了Hash Key生成工具(_HashKey.exe_)，用户可根据需要生成256-1024长度的随机 Hash Key，替换默认值，请注意妥善保管好Hash Key文件。
 
-为了方便用户快速使用，QEMU Virt BSP 自带的标准 qcow2 镜像中已经预置了用户数据库文件(_/vtbd0a/cfg/userDB_)，该文件内保存了使用默认 Hash Key 创建的名为**_root_**的账号， 密码为**_123_**，用户可使用该账号登录系统 Shell、Telnet、FTP 等服务。用户还可以自行在系统中进行账号的创建和管理，具体操作请参考*user*命令的帮助信息。
+为了方便用户快速使用，QEMU Virt BSP自带的标准qcow2镜像中已经预置了用户数据库文件(_/vtbd0a/cfg/userDB_)，该文件内保存了使用默认 Hash Key创建的名为**_root_**的账号，密码为**_123_**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。用户还可以自行在系统中进行账号的创建和管理，具体操作请参考*user*命令的帮助信息。
 
-## 💻7.在 Windows 中搭建 QEMU 环境
+## 💻7.在Windows中搭建QEMU环境
 
-为了方便开发调试工作的开展，可以在 Windows 中安装 QEMU，创建虚拟机运行 DeltaOS。
+为了方便开发调试工作的开展，可以在Windows中安装QEMU，创建虚拟机运行DeltaOS。
 
-### 🎮 安装 QEMU
+### 🎮 安装QEMU
 
-在 Windows 中，可通过 MSYS2 安装或使用 QEMU 在 Windows 平台的安装包完成 QEMU 的安装，在易用性方面 MSYS2 更胜一筹，更值得推荐。
+在Windows中，可通过MSYS2安装或使用QEMU在Windows平台的安装包完成QEMU的安装，在易用性方面MSYS2更胜一筹，更值得推荐。
 
-> 使用 MSYS2 安装 QEMU
+> 使用MSYS2安装QEMU
 
-1. 在[MSYS2 官网](https://www.msys2.org/)下载安装包，完成安装后在开始菜单选择**MSYS2 UCRT64**启动 MSYS2 环境
+1. 在[MSYS2官网](https://www.msys2.org/)下载安装包，完成安装后在开始菜单选择**MSYS2 UCRT64**启动MSYS2环境
 
-2. MSYS2 使用 Pacman 作为软件包管理工具，执行以下命令更新软件库信息并安装 QEMU
+2. MSYS2使用Pacman作为软件包管理工具，执行以下命令更新软件库信息并安装QEMU
 
    ```shell
    pacman -Syu
    pacman -S mingw-w64-ucrt-x86_64-qemu
    ```
 
-3. 可通过查询 QEMU 版本信息检查是否安装成功
+3. 可通过查询QEMU版本信息检查是否安装成功
 
    ```shell
    qemu-system-aarch64 -version
@@ -378,44 +378,44 @@ QEMU Virt BSP 自带了长度为 256 的 Hash Key，并提供了 Hash Key 生成
 
 > 使用 QEMU 安装包直接安装
 
-1. 在[QEMU 官网](https://qemu.weilnetz.de/w64/)下载 64 位版本安装包
-2. 完成安装后，注意把 QEMU 安装目录加入到 Windows 的系统环境变量**Path**中，以支持在 CMD 或 PowerShell 中调用 QEMU
+1. 在[QEMU官网](https://qemu.weilnetz.de/w64/)下载64位版本安装包
+2. 完成安装后，注意把QEMU安装目录加入到Windows的系统环境变量**Path**中，以支持在CMD或PowerShell中调用QEMU
 
-### 📫 安装 TAP 虚拟网卡
+### 📫 安装TAP虚拟网卡
 
-1. 点击[本链接](https://build.openvpn.net/downloads/releases/tap-windows-9.24.7-I601-Win10.exe)，下载 TAP-Windows 安装包并进行安装，完成后在 Windows 的网络连接面板中可看到**TAP-Windows Adapter V9**适配器，如果未出现，可在开始菜单中选择**TAP Windows**，再点击**Add a new TAP virtual ethernet adapter**进行添加
-2. 将 TAP-Windows Adapter V9 适配器重命名为**tap0**
-3. 如果需要同时运行多台虚拟机，请创建多个 TAP 虚拟网卡，并重命名为**tap*x***
+1. 点击[本链接](https://build.openvpn.net/downloads/releases/tap-windows-9.24.7-I601-Win10.exe)，下载TAP-Windows安装包并进行安装，完成后在Windows的网络连接面板中可看到**TAP-Windows Adapter V9**适配器，如果未出现，可在开始菜单中选择**TAP Windows**，再点击**Add a new TAP virtual ethernet adapter**进行添加
+2. 将TAP-Windows Adapter V9适配器重命名为**tap0**
+3. 如果需要同时运行多台虚拟机，请创建多个TAP虚拟网卡，并重命名为**tap*x***
 
 ### 🗝️ 网络配置
 
-> DeltaOS 需要连接互联网
+> DeltaOS需要连接互联网
 
-以 Windows 通过无线网卡连接 WiFi 为例：
+以Windows通过无线网卡连接WiFi为例：
 
-1. 在 WLAN 适配器上单击右键选择**属性**，点击**共享**选项卡
+1. 在WLAN适配器上单击右键选择**属性**，点击**共享**选项卡
 2. 选中**允许其他网络用户通过此计算机的 Internet 连接来连接**前的对号
 3. 在下方下拉菜单中选择**tap0**后点击确定
 
-此时**tap0**的 IP 地址会被设置为 192.168.137.1，并已开启 DHCP 服务，DeltaOS 启动后开启 DHCP Client，网卡即可自动获取到 192.168.137.0 网段的 IP
+此时**tap0**的IP地址会被设置为192.168.137.1，并已开启DHCP服务，DeltaOS启动后开启DHCP Client，网卡即可自动获取到192.168.137.0 网段的IP
 
-> DeltaOS 无需连接互联网
+> DeltaOS无需连接互联网
 
-将**tap0**的 IP 地址设置为 10.0.2.1，子网掩码设置为 255.255.255.0 即可；如需使 DeltaOS 自动获取 IP，需要在 Windows 上搭建 DHCP 服务器，例如可使用免费开源软件[Open DHCP Server](https://dhcpserver.sourceforge.net/)，服务器搭建方法请参考软件的使用手册。
+将**tap0**的IP地址设置为10.0.2.1，子网掩码设置为255.255.255.0即可；如需使DeltaOS自动获取IP，需要在Windows上搭建DHCP服务器，例如可使用免费开源软件[Open DHCP Server](https://dhcpserver.sourceforge.net/)，服务器搭建方法请参考软件的使用手册。
 
 > 多虚拟机网络连通
 
-当启动了多个虚拟机且需要网络互通时，请在 Windows 的网络连接面板中按住<kbd>Ctrl</kbd>键，选中各虚拟机对应的 TAP 适配器，然后右击选择**桥接**，即可创建一个虚拟网桥，再给该网桥设置 IP 地址为 10.0.2.1，子网掩码为 255.255.255.0 即可。
+当启动了多个虚拟机且需要网络互通时，请在 Windows 的网络连接面板中按住<kbd>Ctrl</kbd>键，选中各虚拟机对应的TAP适配器，然后右击选择**桥接**，即可创建一个虚拟网桥，再给该网桥设置IP地址为 10.0.2.1，子网掩码为255.255.255.0即可。
 
 ### 🎊 启动 DeltaOS
 
-打开 MSYS2 UCRT64 或 PowerShell，参考**[🐢 不使用 KVM](###🐢不使用KVM)**章节中的 QEMU 命令启动虚拟机。
+打开MSYS2 UCRT64或PowerShell，参考[🐢 不使用 KVM](###🐢不使用KVM)章节中的QEMU命令启动虚拟机。
 
 > 注意事项
 
-1. 由于在 Windows 中无法使用 KVM，需要在代码或 Shell 中调用*qemuVirtTrigger()*函数使网卡能够正常工作，请参考本文的[📜 附录](##📜附录)
-2. 如果在 Windows 中开启了网络共享，并在 DeltaOS 中开启了 DHCP，则 DNS 服务器地址会被设置为 192.168.137.1，需要根据网络实际情况重新设置 DNS 服务器地址
-3. 请参考[🚀5.性能优化](##🚀5.性能优化)章节优化虚拟机运行时的 CPU 占有率
+1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用*qemuVirtTrigger()*函数使网卡能够正常工作，请参考本文的[📜 附录](##📜附录)
+2. 如果在Windows中开启了网络共享，并在DeltaOS中开启了DHCP，则DNS服务器地址会被设置为192.168.137.1，需要根据网络实际情况重新设置DNS服务器地址
+3. 请参考[🚀5.性能优化](##🚀5.性能优化)章节优化虚拟机运行时的CPU占有率
 
 ---
 
@@ -423,7 +423,7 @@ QEMU Virt BSP 自带了长度为 256 的 Hash Key，并提供了 Hash Key 生成
 
 ### 🪳 已知问题
 
-启动 QEMU 虚拟机时如果未使能 KVM，需要在系统内核代码或 Shell 中调用*qemuVirtTriggerInt (78)*，使能 KVM 时不存在该问题：
+启动QEMU虚拟机时如果未使能KVM，需要在系统内核代码或Shell中调用*qemuVirtTriggerInt (78)*，使能KVM时不存在该问题：
 
 ```c
 #include <qemuVirt.h>
@@ -434,7 +434,7 @@ void usrAppInit (void)
 }
 ```
 
-### 🌳Qemu Virt 设备树
+### 🌳Qemu Virt设备树
 
 ```shell
 /dts-v1/;

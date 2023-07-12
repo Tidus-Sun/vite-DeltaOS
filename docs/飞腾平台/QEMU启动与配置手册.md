@@ -259,7 +259,7 @@ Child node '/file':
 
 如果在ARM64位架构主机上运行QEMU虚拟机，可以通过开启KVM实现硬件辅助虚拟化，提高虚拟机性能(注意需要在主机启动固件中开启SMMUv3)；非ARM64位架构主机不可开启KVM，仅可使用TCG加速。
 
-启动命令中**_-kernel_**选项指定DeltaOS系统镜像文件，使用相对地址或绝对地址皆可。当启动多个虚拟机时，请注意修改命令行中的磁盘镜像文件、monitor端口号、tap设备名、MAC地址等参数。
+启动命令中**-kernel**选项指定DeltaOS系统镜像文件，使用相对地址或绝对地址皆可。当启动多个虚拟机时，请注意修改命令行中的磁盘镜像文件、monitor端口号、tap设备名、MAC地址等参数。
 
 > 下列命令创建和启动了一台具有8个Core，8GB RAM，一个virtio-blk-pci和一个virtio-net-pci设备的虚拟机，默认BSP最多可支持配置和启动32核处理器
 >
@@ -379,7 +379,7 @@ void usrAppInit (void)
 }
 ```
 
-为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(*/vtbd0a/cfg/userDB*)，该文件内保存了使用默认Hash Key创建的名为**<em>root</em>**的账号， 密码为**<em>123</em>**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
+为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(*/vtbd0a/cfg/userDB*)，该文件内保存了使用默认Hash Key创建的名为**root**的账号， 密码为**123**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
 
 ```shell
 userPasswordUpdate "root","123","new_password"

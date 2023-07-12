@@ -229,7 +229,7 @@ sudo losetup -d /dev/loop0
 
 ### 🥪标准磁盘镜像
 
-为了便于用户快速完成系统配置与启动，QEMU Virt BSP中提供了一个已创建好的qcow2磁盘镜像文件(*disk.qcow2*)，可以直接挂载使用。该磁盘大小为**16GB**，使用MBR分区表，划分为2个主分区，每个分区大小为8GB。第一个分区_/vtbd0a_中存储了用户数据库以及SSH Key文件，详细信息请参考[🪪6.用户管理](##🪪6.用户管理)和[㊙️7.SSH Server配置](##㊙️7.SSH Server配置)章节。
+为了便于用户快速完成系统配置与启动，QEMU Virt BSP中提供了一个已创建好的qcow2磁盘镜像文件(*disk.qcow2*)，可以直接挂载使用。该磁盘大小为**16GB**，使用MBR分区表，划分为2个主分区，每个分区大小为8GB。第一个分区<em>/vtbd0a</em>中存储了用户数据库以及SSH Key文件，详细信息请参考[🪪6.用户管理](##🪪6.用户管理)和㊙️7.SSH Server配置章节。
 
 磁盘镜像信息如下:
 
@@ -360,7 +360,7 @@ void usrPreKernelAppInit (void)
 
 ## 🪪6.用户管理
 
-DeltaOS具备用户认证与管理功能，适用于Shell、FTP、Telnet、SSH等服务登录时的身份验证。用户可根据需要创建登录账号，账号的密码通过Hash Key计算后存储在文件中。请在*usrAppInit ()*函数中添加以下代码进行用户管理功能初始化：
+DeltaOS具备用户认证与管理功能，适用于Shell、FTP、Telnet、SSH等服务登录时的身份验证。用户可根据需要创建登录账号，账号的密码通过Hash Key计算后存储在文件中。请在<em>usrAppInit()</em>函数中添加以下代码进行用户管理功能初始化：
 
 ```c
 /* For checkUserDB () */
@@ -379,7 +379,7 @@ void usrAppInit (void)
 }
 ```
 
-为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(*/vtbd0a/cfg/userDB*)，该文件内保存了使用默认Hash Key创建的名为**_root_**的账号， 密码为**_123_**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
+为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(*/vtbd0a/cfg/userDB*)，该文件内保存了使用默认Hash Key创建的名为**<em>root</em>**的账号， 密码为**<em>123</em>**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
 
 ```shell
 userPasswordUpdate "root","123","new_password"
@@ -449,7 +449,7 @@ Generating DSA key, 2048 bits
 ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa root@10.0.2.4
 ```
 
-为方便起见，建议在SSH配置文件*~/.ssh/config*中增加以下配置:
+为方便起见，建议在SSH配置文件<em>~/.ssh/config</em>中增加以下配置:
 
 ```shell
 #~/.ssh/config
@@ -528,11 +528,11 @@ sftp>
 
 ### 🎊启动DeltaOS
 
-打开MSYS2 UCRT64或PowerShell，参考**[🐢不使用KVM](###🐢不使用KVM)**章节中的QEMU命令启动虚拟机。
+打开MSYS2 UCRT64或PowerShell，参考[🐢不使用KVM](###🐢不使用KVM)章节中的QEMU命令启动虚拟机。
 
 > 注意事项
 
-1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用*qemuVirtTrigger()*函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
+1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用<em>qemuVirtTrigger()</em>函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
 2. 如果在Windows中开启了网络共享，并在DeltaOS中开启了DHCP，则DNS服务器地址会被设置为192.168.137.1，需要根据网络实际情况重新设置DNS服务器地址
 3. 请参考[🚀5.性能优化](##🚀5.性能优化)章节优化虚拟机运行时的CPU占有率
 
@@ -542,7 +542,7 @@ sftp>
 
 ### 🕳️已知问题
 
-启动QEMU虚拟机时如果未使能KVM，需要先主动触发一次virtio网卡中断(通常为78号，不同环境下中断号可能会有变化)，使能KVM时不存在该问题。*qemuVirtTrigger()*函数在系统内核代码或Shell中调用皆可：
+启动QEMU虚拟机时如果未使能KVM，需要先主动触发一次virtio网卡中断(通常为78号，不同环境下中断号可能会有变化)，使能KVM时不存在该问题。<em>qemuVirtTrigger()</em>函数在系统内核代码或Shell中调用皆可：
 
 ```c
 #include <qemuVirt.h>

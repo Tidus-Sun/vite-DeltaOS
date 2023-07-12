@@ -28,13 +28,13 @@ layout: doc
 
 在Linux中创建TAP设备并开启NAT，可以实现QEMU虚拟机与Linux主机的网络互通以及虚拟机访问互联网。配置的主要步骤如下：
 
-1. 创建网桥_br0_和TAP设备_tap0_
-2. 为_br0_添加IP地址_10.0.2.1_
+1. 创建网桥*br0*和TAP设备*tap0*
+2. 为*br0*添加IP地址*10.0.2.1*
 3. 开启Linux系统IP转发
-4. 允许网桥_br0_转发的数据包通过防火墙
+4. 允许网桥*br0*转发的数据包通过防火墙
 5. 开启NAT功能
 
-QEMU Virt BSP中提供了下列命令的可执行脚本文件，名为_config_net_nat.sh_
+QEMU Virt BSP中提供了下列命令的可执行脚本文件，名为*config_net_nat.sh*
 
 > 注意：
 >
@@ -59,12 +59,12 @@ sudo iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
 
 也可以采用Bridge模式进行网络配置，这种方法将Linux的网卡与TAP设备同时绑定在网桥上，QEMU虚拟机的IP与Linux网卡IP在同一网段中。具体步骤如下：
 
-1. 创建网桥_br1_和TAP设备_tap1_
-2. 将物理网卡_ens33_和_tap1_绑定到网桥_br1_上
-3. 将_ens33_的IP地址设置在网桥_br1_上
+1. 创建网桥*br1*和TAP设备*tap1*
+2. 将物理网卡*ens33*和*tap1*绑定到网桥*br1*上
+3. 将*ens33*的IP地址设置在网桥*br1*上
 4. 设置默认路由且使用br1作为接口
 5. 开启Linux系统IP转发
-6. 允许网桥_br1_转发的数据包通过防火墙
+6. 允许网桥*br1*转发的数据包通过防火墙
 
 > 请根据您网络环境的实际情况修改物理网卡名和所需网络地址
 
@@ -131,9 +131,9 @@ sudo systemctl enable dhcpd4.service
 
 ## 💾2.QEMU磁盘镜像配置
 
-当QEMU虚拟机内的DeltaOS需要存储设备时，可以在Linux中创建磁盘镜像文件，作为块设备挂载到QEMU虚拟机上。下面介绍两种磁盘镜像文件创建方法，分别是使用_qemu-img_工具创建qcow2格式的镜像文件和使用_dd_直接创建镜像文件。
+当QEMU虚拟机内的DeltaOS需要存储设备时，可以在Linux中创建磁盘镜像文件，作为块设备挂载到QEMU虚拟机上。下面介绍两种磁盘镜像文件创建方法，分别是使用*qemu-img*工具创建qcow2格式的镜像文件和使用*dd*直接创建镜像文件。
 
-qcow2格式支持稀疏存储，具有压缩、快照、回滚、加密等功能，并可通过_qemu-img_工具转换为其他镜像格式，因此强烈推荐使用qcow2文件作为QEMU虚拟机的磁盘镜像。
+qcow2格式支持稀疏存储，具有压缩、快照、回滚、加密等功能，并可通过*qemu-img*工具转换为其他镜像格式，因此强烈推荐使用qcow2文件作为QEMU虚拟机的磁盘镜像。
 
 ### 💽qemu-img
 
@@ -178,7 +178,7 @@ sudo qemu-nbd -d /dev/nbd0
 
 ### ⛏️dd
 
-也可以使用_dd_命令创建磁盘镜像，以下步骤创建了一个1GB的磁盘镜像并进行了分区和格式化：
+也可以使用*dd*命令创建磁盘镜像，以下步骤创建了一个1GB的磁盘镜像并进行了分区和格式化：
 
 ```shell
 #使用seek参数创建稀疏文件
@@ -221,15 +221,15 @@ sudo losetup -d /dev/loop0
 
 > 注意:
 >
-> 1. QEMU使用_dd_创建的镜像时，_-drive_参数的format应设置为_raw_
+> 1. QEMU使用*dd*创建的镜像时，*-drive*参数的format应设置为*raw*
 >
-> 2. 使用_cp_命令复制稀疏文件时可能会复制文件的全部未压缩大小，请按如下方式进行复制：
+> 2. 使用*cp*命令复制稀疏文件时可能会复制文件的全部未压缩大小，请按如下方式进行复制：
 >
 >    _`cp --sparse=always source_file new_file`_
 
 ### 🥪标准磁盘镜像
 
-为了便于用户快速完成系统配置与启动，QEMU Virt BSP中提供了一个已创建好的qcow2磁盘镜像文件(_disk.qcow2_)，可以直接挂载使用。该磁盘大小为**16GB**，使用MBR分区表，划分为2个主分区，每个分区大小为8GB。第一个分区_/vtbd0a_中存储了用户数据库以及SSH Key文件，详细信息请参考[🪪6.用户管理](##🪪6.用户管理)和[㊙️7.SSH Server配置](##㊙️7.SSH Server配置)章节。
+为了便于用户快速完成系统配置与启动，QEMU Virt BSP中提供了一个已创建好的qcow2磁盘镜像文件(*disk.qcow2*)，可以直接挂载使用。该磁盘大小为**16GB**，使用MBR分区表，划分为2个主分区，每个分区大小为8GB。第一个分区*/vtbd0a*中存储了用户数据库以及SSH Key文件，详细信息请参考[🪪6.用户管理](##🪪6.用户管理)和[㊙️7.SSH Server配置](##㊙️7.SSH Server配置)章节。
 
 磁盘镜像信息如下:
 
@@ -290,7 +290,7 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=3 -cpu cortex-a
 
 ### 📟DHCP Client
 
-在DeltaOS中可通过_ifconfig_命令开启或关闭网卡的DHCP功能:
+在DeltaOS中可通过*ifconfig*命令开启或关闭网卡的DHCP功能:
 
 ```shell
 ->cmd
@@ -309,7 +309,7 @@ ifconfig virtioNet0 -dhcp
 sysvar set -o ipdnsc.primaryns 192.168.213.2
 ```
 
-设置DNS后可通过_ping_命令进行验证：
+设置DNS后可通过*ping*命令进行验证：
 
 ```shell
 ping -c 3 www.qq.com
@@ -326,7 +326,7 @@ rtt min/avg/max = 33/44/50 ms
 
 ### ✒️手动设置IP地址
 
-不使用DHCP时，可通过_ifconfig_命令手动设置网卡IP地址：
+不使用DHCP时，可通过*ifconfig*命令手动设置网卡IP地址：
 
 ```shell
 ->cmd
@@ -335,7 +335,7 @@ ifconfig virtioNet0 inet 10.0.2.4 netmask 255.255.255.0
 
 ### 📖设置路由表
 
-可通过_route_命令对路由表进行设置，更多使用方法请参考帮助信息：
+可通过*route*命令对路由表进行设置，更多使用方法请参考帮助信息：
 
 ```shell
 ->cmd
@@ -347,7 +347,7 @@ route add default 10.0.2.1
 
 ## 🚀5.性能优化
 
-在QEMU虚拟机内运行DeltaOS时，需要在内核镜像的_usrPreKernelAppInit()_函数中调用_qemuVirtCpuOptimize()_，可优化虚拟机运行时的CPU占有率，大幅提升性能，代码如下:
+在QEMU虚拟机内运行DeltaOS时，需要在内核镜像的*usrPreKernelAppInit()*函数中调用*qemuVirtCpuOptimize()*，可优化虚拟机运行时的CPU占有率，大幅提升性能，代码如下:
 
 ```c
 #include <qemuVirt.h>
@@ -360,7 +360,7 @@ void usrPreKernelAppInit (void)
 
 ## 🪪6.用户管理
 
-DeltaOS具备用户认证与管理功能，适用于Shell、FTP、Telnet、SSH等服务登录时的身份验证。用户可根据需要创建登录账号，账号的密码通过Hash Key计算后存储在文件中。请在_usrAppInit ()_函数中添加以下代码进行用户管理功能初始化：
+DeltaOS具备用户认证与管理功能，适用于Shell、FTP、Telnet、SSH等服务登录时的身份验证。用户可根据需要创建登录账号，账号的密码通过Hash Key计算后存储在文件中。请在*usrAppInit ()*函数中添加以下代码进行用户管理功能初始化：
 
 ```c
 /* For checkUserDB () */
@@ -379,19 +379,19 @@ void usrAppInit (void)
 }
 ```
 
-为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(_/vtbd0a/cfg/userDB_)，该文件内保存了使用默认Hash Key创建的名为**_root_**的账号， 密码为**_123_**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
+为了方便开发时快速使用，QEMU Virt BSP自带了长度为256字节的Hash Key，并在标准qcow2镜像中预置了用户数据库文件(*/vtbd0a/cfg/userDB*)，该文件内保存了使用默认Hash Key创建的名为**_root_**的账号， 密码为**_123_**，用户可使用该账号登录系统Shell、Telnet、FTP等服务。如需修改root账号密码，可在Shell中进行以下操作：
 
 ```shell
 userPasswordUpdate "root","123","new_password"
 ```
 
-其他账号管理操作请参考_user_命令的帮助信息。
+其他账号管理操作请参考*user*命令的帮助信息。
 
-> 注意，进行系统部署时，切记应使用QEMU Virt BSP提供的Hash Key生成工具(_HashKey.exe_)，生成256至1024长度的随机Hash Key，替换BSP的默认Key(_UDB_HASH_KEY_)，重新创建账号并妥善保管好Hash Key文件
+> 注意，进行系统部署时，切记应使用QEMU Virt BSP提供的Hash Key生成工具(*HashKey.exe*)，生成256至1024长度的随机Hash Key，替换BSP的默认Key(*UDB_HASH_KEY*)，重新创建账号并妥善保管好Hash Key文件
 
 ## ㊙️7.SSH Server配置
 
-DeltaOS支持_Secure Shell_协议，即**SSH**，可为用户提供安全的远程Shell登录和文件传输(SFTP)服务。当DeltaOS用作SSH Server时，需要先制作及保存RSA和DSA Key：
+DeltaOS支持*Secure Shell*协议，即**SSH**，可为用户提供安全的远程Shell登录和文件传输(SFTP)服务。当DeltaOS用作SSH Server时，需要先制作及保存RSA和DSA Key：
 
 ### 🗝️制作Key
 
@@ -449,7 +449,7 @@ Generating DSA key, 2048 bits
 ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa root@10.0.2.4
 ```
 
-为方便起见，建议在SSH配置文件_~/.ssh/config_中增加以下配置:
+为方便起见，建议在SSH配置文件*~/.ssh/config*中增加以下配置:
 
 ```shell
 #~/.ssh/config
@@ -504,7 +504,7 @@ sftp>
 
 1. 点击[本链接](https://build.openvpn.net/downloads/releases/tap-windows-9.24.7-I601-Win10.exe)，下载TAP-Windows安装包并进行安装，完成后在Windows的网络连接面板中可看到**TAP-Windows Adapter V9**适配器，如果未出现，可在开始菜单中选择**TAP Windows**，再点击**Add a new TAP virtual ethernet adapter**进行添加
 2. 将TAP-Windows Adapter V9适配器重命名为**tap0**
-3. 如果需要同时运行多台虚拟机，请创建多个TAP虚拟网卡，并重命名为**tap_x_**
+3. 如果需要同时运行多台虚拟机，请创建多个TAP虚拟网卡，并重命名为**tap*x***
 
 ### 🌏网络配置
 
@@ -532,7 +532,7 @@ sftp>
 
 > 注意事项
 
-1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用_qemuVirtTrigger()_函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
+1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用*qemuVirtTrigger()*函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
 2. 如果在Windows中开启了网络共享，并在DeltaOS中开启了DHCP，则DNS服务器地址会被设置为192.168.137.1，需要根据网络实际情况重新设置DNS服务器地址
 3. 请参考[🚀5.性能优化](##🚀5.性能优化)章节优化虚拟机运行时的CPU占有率
 
@@ -542,7 +542,7 @@ sftp>
 
 ### 🕳️已知问题
 
-启动QEMU虚拟机时如果未使能KVM，需要先主动触发一次virtio网卡中断(通常为78号，不同环境下中断号可能会有变化)，使能KVM时不存在该问题。_qemuVirtTrigger()_函数在系统内核代码或Shell中调用皆可：
+启动QEMU虚拟机时如果未使能KVM，需要先主动触发一次virtio网卡中断(通常为78号，不同环境下中断号可能会有变化)，使能KVM时不存在该问题。*qemuVirtTrigger()*函数在系统内核代码或Shell中调用皆可：
 
 ```c
 #include <qemuVirt.h>

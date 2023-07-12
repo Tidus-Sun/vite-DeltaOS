@@ -103,6 +103,10 @@ export default defineConfig({
                       text: '道系统6的ARMv7异常处理流程分析',
                       link: '/公共知识/道系统6/道系统6的ARMv7异常处理流程分析.md',
                     },
+                    {
+                      text: '道系统应用32位到64位代码迁移指南',
+                      link: '/公共知识/道系统6/道系统应用32位到64位代码迁移指南.md',
+                    },
                   ],
                 },
                 {
@@ -125,8 +129,8 @@ export default defineConfig({
           collapsed: false,
           items: [
             {
-              text: 'QEMU虚拟机启动64位道系统',
-              link: '/飞腾平台/QEMU虚拟机启动64位道系统.md',
+              text: 'QEMU启动与配置手册',
+              link: '/飞腾平台/QEMU启动与配置手册.md',
             },
             // ...
           ],
@@ -201,6 +205,10 @@ export default defineConfig({
                       text: '道系统6的ARMv7异常处理流程分析',
                       link: '/公共知识/道系统6/道系统6的ARMv7异常处理流程分析.md',
                     },
+                    {
+                      text: '道系统应用32位到64位代码迁移指南',
+                      link: '/公共知识/道系统6/道系统应用32位到64位代码迁移指南.md',
+                    },
                   ],
                 },
                 {
@@ -226,8 +234,8 @@ export default defineConfig({
           collapsed: false,
           items: [
             {
-              text: 'QEMU虚拟机启动64位道系统',
-              link: '/飞腾平台/QEMU虚拟机启动64位道系统.md',
+              text: 'QEMU启动与配置手册',
+              link: '/飞腾平台/QEMU启动与配置手册.md',
             },
             // ...
           ],

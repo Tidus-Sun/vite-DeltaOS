@@ -4,7 +4,7 @@ layout: home
 hero:
   name: 道系统6 Wiki
   text: 欢迎访问科银京成         道系统6维基小百科💯
-  tagline: 来都来了，不学习些东西怎么能行呢？
+  tagline: 择其善者而从之，其不善者而改之
   image:
     light: '/pic/yuanshen_4.png'
     dark: '/pic/yuanshen_3.png'

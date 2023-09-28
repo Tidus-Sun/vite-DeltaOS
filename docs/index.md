@@ -14,8 +14,8 @@ hero:
       text: 开始使用
       link: /简介
     - theme: alt
-      text: 科银京成官网
-      link: http://www.coretek.com.cn
+      text: 组内FTP
+      link: ftp://192.168.11.187
 features:   
   - icon:
       light: '/pic/criticalrole-color.svg'

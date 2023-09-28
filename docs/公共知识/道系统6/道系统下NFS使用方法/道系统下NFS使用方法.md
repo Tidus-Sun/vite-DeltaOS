@@ -19,9 +19,9 @@ Network File System(NFS)设备允许使用NFS协议访问远程系统上的文�
 
 想要设置道系统为`NFS Client`并用它挂载一个远程NFS系统，需要的操作步骤如下所示：
 
-1. 如果你没有设置`usr name`、`usr ID`、`group name`等必要参数，可以手动调用函数`nfsAuthUnixSet`进行参数配置，见[1.2.1](####设置`NFS Client`用户参数)
-2. 调用`hostAdd`添加远程NFS系统到道系统下的`host table`表中),见[1.2.2](####添加远程`NFS`系统至主机表(`Host Table`))
-3. 调用`nfsMount`或者`nfsMountAll`来挂载一个远程文件系统,见[1.2.3](####挂载远程文件系统)
+1. 如果你没有设置`usr name`、`usr ID`、`group name`等必要参数，可以手动调用函数`nfsAuthUnixSet`进行参数配置，见[1.2.1]()
+2. 调用`hostAdd`添加远程NFS系统到道系统下的`host table`表中),见[1.2.2]()
+3. 调用`nfsMount`或者`nfsMountAll`来挂载一个远程文件系统,见[1.2.3]()
 
 #### 1.2.1 设置NFS Client用户参数
 

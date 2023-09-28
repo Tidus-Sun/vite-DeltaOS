@@ -62,7 +62,7 @@ nfsMount的语法格式如下：
  挂载成功后，通过devs即可看到/usr，操作/usr即是操作/ahci00:1
 ```
 
-```
+```markdown
 nfsMountAll使用：
 如果你在挂载远程文件系统后，不需要指定一个新名字，那么可以考虑使用nfsMountAll
 nfsMountAll的语法格式如下：
@@ -82,7 +82,7 @@ nfsExportShow "hostName"
 hostName:NFS Server主机名字，道系统下可以使用gethostname获取，linux与windows下可以使用hostname命令查看
 ```
 
-<mark>注意</makr>:跨平台使用NFS服务时，`NFS Server`与`NFS Client`的协议版本一定要保持一致，协议版本不一致会导致挂载或者访问文件系统失败。
+<mark>注意</mark>:跨平台使用NFS服务时，`NFS Server`与`NFS Client`的协议版本一定要保持一致，协议版本不一致会导致挂载或者访问文件系统失败。
 
 #### 1.2.4 使用示例
 

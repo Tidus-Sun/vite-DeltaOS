@@ -1,4 +1,4 @@
-# 道系统下NFS的使用方法
+<div align='center' ><font size=6>道系统下NFS的使用方法</font></div>
 
 [[TOC]]
 
@@ -82,7 +82,7 @@ nfsExportShow "hostName"
 hostName:NFS Server主机名字，道系统下可以使用gethostname获取，linux与windows下可以使用hostname命令查看
 ```
 
-<mark>注意</mark>:跨平台使用NFS服务时，`NFS Server`与`NFS Client`的协议版本一定要保持一致，协议版本不一致会导致挂载或者访问文件系统失败。
+==注意==:跨平台使用NFS服务时，`NFS Server`与`NFS Client`的协议版本一定要保持一致，协议版本不一致会导致挂载或者访问文件系统失败。
 
 #### 1.2.4 使用示例
 
@@ -140,7 +140,7 @@ nfsExport("/ahci00:1",0,FALSE,0);
 第四个参数：未来扩展的占位符
 ```
 
-<mark>注意</mark>:对于导出的NFS文件系统，设备名不能以一个`/`作为结束。
+==注意==:对于导出的NFS文件系统，设备名不能以一个`/`作为结束。
 
 #### 2.1.2使用示例
 

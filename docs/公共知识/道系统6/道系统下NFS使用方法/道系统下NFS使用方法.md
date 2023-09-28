@@ -62,7 +62,7 @@ nfsMount的语法格式如下：
  挂载成功后，通过devs即可看到/usr，操作/usr即是操作/ahci00:1
 ```
 
-```markdown
+```
 nfsMountAll使用：
 如果你在挂载远程文件系统后，不需要指定一个新名字，那么可以考虑使用nfsMountAll
 nfsMountAll的语法格式如下：

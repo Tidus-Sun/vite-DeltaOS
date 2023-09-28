@@ -29,7 +29,7 @@ Network File System(NFS)设备允许使用NFS协议访问远程系统上的文�
 
 但是有些道系统版本没有设置启动参数，所以通过`nfsAuthUnixShow`会看到没有`usr name`这时就需要我们手动调用`nfsAuthUnixSet`或`nfsAuthUnixPrompt`进行设置。
 
-```mark
+```markdown
 例设置usr name为DeltaClinet,NFS usr ID为1000，NFS group为200
 > nfsAuthUnixSet "DeltaClinet",1000,200,0
 ```

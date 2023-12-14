@@ -6,8 +6,8 @@ hero:
   text: 欢迎访问科银京成         道系统6维基小百科💯
   tagline: 择其善者而从之，其不善者而改之
   image:
-    light: '/pic/yuanshen_4.png'
-    dark: '/pic/yuanshen_3.png'
+    light: '/pic/logo2.png'
+    dark: '/pic/logo1.png'
     alt: 试试Drak模式？
   actions:
     - theme: brand
@@ -15,7 +15,7 @@ hero:
       link: /简介
     - theme: alt
       text: 组内FTP
-      link: ftp://192.168.11.187
+      link: ftp://192.168.118.15
 features:   
   - icon:
       light: '/pic/criticalrole-color.svg'

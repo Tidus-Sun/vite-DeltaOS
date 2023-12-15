@@ -6,8 +6,8 @@ hero:
   text: 欢迎访问科银京成         道系统6维基小百科💯
   tagline: 择其善者而从之，其不善者而改之
   image:
-    light: '/pic/logo3.png'
-    dark: '/pic/logo4.png'
+    light: '/pic/logo5.png'
+    dark: '/pic/logo6.png'
     alt: 试试Drak模式？
   actions:
     - theme: brand

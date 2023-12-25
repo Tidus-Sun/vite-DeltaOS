@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress';
 // refer https://vitepress.vuejs.org/config/introduction for details
 export default defineConfig({
   lang: 'zh-CN',
-  title: '道系统6维基小百科',
+  title: '道系统6维基百科',
   description: '科银京成道系统6产品组维基百科',
 
   markdown: {
@@ -110,6 +110,10 @@ export default defineConfig({
                     {
                       text: '道系统下NFS使用方法',
                       link: '/公共知识/道系统6/道系统下NFS使用方法/道系统下NFS使用方法.md',
+                    },
+                    {
+                      text: '基于dosFs文件系统的文件操作接口说明',
+                      link: '/公共知识/道系统6/基于dosFs文件系统的文件操作接口说明/基于dosFs文件系统的文件操作接口说明.md',
                     },
                   ],
                 },
@@ -220,6 +224,10 @@ export default defineConfig({
                     {
                       text: '道系统下NFS使用方法',
                       link: '/公共知识/道系统6/道系统下NFS使用方法/道系统下NFS使用方法.md',
+                    },
+                    {
+                      text: '基于dosFs文件系统的文件操作接口说明',
+                      link: '/公共知识/道系统6/基于dosFs文件系统的文件操作接口说明/基于dosFs文件系统的文件操作接口说明.md',
                     },
                   ],
                 },

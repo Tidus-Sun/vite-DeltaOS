@@ -5,9 +5,9 @@ layout: doc
 <div align='center'><font size=8>QEMU启动与配置手册</font></div>
 <br>
 <div align='center'>
-    <img src="https://img.shields.io/badge/Platform-AArch64|QEMU|DeltaOS-008DB6?style=flat&logo=arm" style="display: inline-block;">&nbsp;
-    <img src="https://img.shields.io/badge/Version-v1.4-99CC33?style=flat&logo=Git" style="display: inline-block;">&nbsp;
-    <img src="https://img.shields.io/badge/Date-2023.07.12-FF6384?style=flat&logo=Crayon" style="display: inline-block;">
+    <img src="https://img.shields.io/badge/Platform-QEMU|AArch64|DeltaOS-008DB6?style=flat&logo=ARM" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Version-v1.4.2-99CC33?style=flat&logo=Git" style="display: inline-block;">&nbsp;
+    <img src="https://img.shields.io/badge/Date-2023.12.25-FF6384?style=flat&logo=Crayon" style="display: inline-block;">
 </div>
  <div align='center'>
     <img src="https://img.shields.io/badge/License-Coretek-ffb71b?style=flat&logo=Coursera" style="display: inline-block;">&nbsp;
@@ -129,7 +129,7 @@ sudo systemctl start dhcpd4.service
 sudo systemctl enable dhcpd4.service
 ```
 
-## 💾2.QEMU磁盘镜像配置
+## 💾2.QEMU磁盘镜像创建
 
 当QEMU虚拟机内的DeltaOS需要存储设备时，可以在Linux中创建磁盘镜像文件，作为块设备挂载到QEMU虚拟机上。下面介绍两种磁盘镜像文件创建方法，分别是使用*qemu-img*工具创建qcow2格式的镜像文件和使用*dd*直接创建镜像文件。
 
@@ -271,7 +271,7 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=host,its=on -cp
 -accel accel=kvm -nographic -rtc base=localtime -kernel DeltaOS.elf -monitor telnet::5555,server,nowait \
 -drive if=none,file=./disk.qcow2,id=dosFS,format=qcow2,cache=none,aio=native \
 -device virtio-blk-pci,drive=dosFS,num-queues=8,packed=on \
--netdev tap,id=tapnet,ifname=tap0,script=no,downscript=no,br=0,vhost=on,queues=8 \
+-netdev tap,id=tapnet,ifname=tap0,script=no,downscript=no,br=0,vhost=on,queues=2 \
 -device virtio-net-pci,netdev=tapnet,mq=on,packed=on,mac=52:54:00:11:22:33
 ```
 
@@ -282,8 +282,28 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=3 -cpu cortex-a
 -accel accel=tcg -nographic -rtc base=localtime -kernel DeltaOS.elf -monitor telnet::5555,server,nowait \
 -drive if=none,file=./disk.qcow2,id=dosFS,format=qcow2,cache=none,aio=native \
 -device virtio-blk-pci,drive=dosFS,num-queues=8,packed=on \
--netdev tap,id=tapnet,ifname=tap0,script=no,downscript=no,br=0,vhost=on,queues=8 \
+-netdev tap,id=tapnet,ifname=tap0,script=no,downscript=no,br=0,vhost=on,queues=2 \
 -device virtio-net-pci,netdev=tapnet,mq=on,packed=on,mac=52:54:00:11:22:33
+```
+
+### 🪞使用MMIO总线的Virtio设备
+
+如果希望使用mmio总线的Virtio网络和块设备，可以将启动参数改为以下配置：
+
+```shell
+-drive if=none,file=./disk.qcow2,id=dosFS,format=qcow2,cache=none,aio=native \
+-device virtio-blk-device,drive=dosFS,num-queues=8,packed=on \
+-netdev tap,id=tapnet,ifname=tap0,script=no,downscript=no,br=0,queues=2 \
+-device virtio-net-device,netdev=tapnet,mq=on,packed=on,mac=52:54:00:11:22:33
+```
+
+### 🪢模拟SATA硬盘
+
+如果需要模拟SATA硬盘，可以使用以下参数进行配置：
+
+```shell
+-drive if=none,file=./disk.qcow2,id=dosFS,format=qcow2,cache=none,aio=native \
+-device ahci,id=ahci -device ide-hd,drive=dosFS,bus=ahci.0 \
 ```
 
 ## 🛠️4.DeltaOS网络配置
@@ -532,7 +552,7 @@ sftp>
 
 > 注意事项
 
-1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用<em>qemuVirtTrigger()</em>函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
+1. 由于在Windows中无法使用KVM，需要在代码或Shell中调用<em>qemuVirtTriggerInt()</em>函数使网卡能够正常工作，请参考本文的[📜附录](##📜附录)
 2. 如果在Windows中开启了网络共享，并在DeltaOS中开启了DHCP，则DNS服务器地址会被设置为192.168.137.1，需要根据网络实际情况重新设置DNS服务器地址
 3. 请参考[🚀5.性能优化](##🚀5.性能优化)章节优化虚拟机运行时的CPU占有率
 
@@ -542,16 +562,18 @@ sftp>
 
 ### 🕳️已知问题
 
-启动QEMU虚拟机时如果未使能KVM，需要先主动触发一次virtio网卡中断(通常为78号，不同环境下中断号可能会有变化)，使能KVM时不存在该问题。<em>qemuVirtTrigger()</em>函数在系统内核代码或Shell中调用皆可：
+1. 启动QEMU虚拟机时如果未使能KVM，需要先主动调用一次<em>qemuVirtTriggerInt()</em>函数，使能KVM时不存在该问题。该函数在系统内核代码或Shell中调用皆可：
 
 ```c
 #include <qemuVirt.h>
 
 void usrAppInit (void)
 {
-    qemuVirtTrigger (78);
+    qemuVirtTriggerInt (78);
 }
 ```
+
+2. QEMU配置参数*-netdev queues*的设置建议**不大于4**。
 
 ### 🌳Qemu Virt 设备树
 

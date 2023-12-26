@@ -303,7 +303,7 @@ qemu-system-aarch64 -name DeltaOS -machine type=virt,gic-version=3 -cpu cortex-a
 
 ```shell
 -drive if=none,file=./disk.qcow2,id=dosFS,format=qcow2,cache=none,aio=native \
--device ahci,id=ahci -device ide-hd,drive=dosFS,bus=ahci.0 \
+-device ahci,id=ahci -device ide-hd,drive=dosFS,bus=ahci.0
 ```
 
 ## 🛠️4.DeltaOS网络配置
@@ -573,7 +573,7 @@ void usrAppInit (void)
 }
 ```
 
-2. QEMU配置参数*-netdev queues*的设置建议**不大于4**。
+2. QEMU配置参数<em>-netdev queues</em>的设置建议**不大于4**。
 
 ### 🌳Qemu Virt 设备树
 

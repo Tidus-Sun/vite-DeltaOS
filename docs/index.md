@@ -6,7 +6,7 @@ hero:
   text: 欢迎访问科银京成         道系统6自修百科💯
   tagline: 择其善者而从之，其不善者而改之
   image:
-    light: '/pic/新青年.png'
+    light: '/pic/xinqingnian.png'
     dark: '/pic/logo5.png'
     alt: 试试Drak模式？
   actions:

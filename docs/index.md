@@ -2,12 +2,12 @@
 layout: home
 
 hero:
-  name: 道系统6 Wiki
-  text: 欢迎访问科银京成         道系统6维基百科💯
+  name: 道系统6 百科
+  text: 欢迎访问科银京成         道系统6自修百科💯
   tagline: 择其善者而从之，其不善者而改之
   image:
-    light: '/pic/logo5.png'
-    dark: '/pic/logo6.png'
+    light: '/pic/新青年.png'
+    dark: '/pic/logo5.png'
     alt: 试试Drak模式？
   actions:
     - theme: brand

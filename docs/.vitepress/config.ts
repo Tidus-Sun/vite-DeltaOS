@@ -3,8 +3,8 @@ import { defineConfig } from 'vitepress';
 // refer https://vitepress.vuejs.org/config/introduction for details
 export default defineConfig({
   lang: 'zh-CN',
-  title: '道系统6维基百科',
-  description: '科银京成道系统6产品组维基百科',
+  title: '道系统6自修百科',
+  description: '科银京成道系统6产品组自修百科',
 
   markdown: {
     theme: 'material-theme-darker',
@@ -24,7 +24,7 @@ export default defineConfig({
     ],
     footer: {
       message: 'Released under the MIT License.',
-      copyright: '版权所有 © 2023-present Coretek Tidus',
+      copyright: '版权所有 © 2024-present Coretek Tidus',
     },
     docFooter: {
       prev: '上一页',
